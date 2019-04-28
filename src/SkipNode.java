@@ -48,17 +48,18 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 				skipNode.ask();
 			}
 
-		}catch(RemoteException e) {
-			System.out.println("Remote Exception in main method. Terminating.");
-			e.printStackTrace();
-			System.exit(1);
-		}catch(IOException e){
+		} catch(RemoteException e) {
+		    System.out.println("Remote Exception in main method. Terminating.");
+		    e.printStackTrace();
+		    System.exit(1);
+		} catch(IOException e){
 			log("Error in Rebinding");
 			e.printStackTrace();
 		}
-		in.close();
 
+		in.close();
 	}
+
 	/*
 	 * Constructor for SkipNode class needed for RMI setup
 	 */
@@ -72,6 +73,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 			System.err.println("Unknown Host Exception in constructor. Please terminate the program and try again.");
 		}
 	}
+
 	/*
 	 * This method initializes the information of the current node
 	 * and prints them to console
@@ -84,12 +86,14 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 			log("Name ID should be a binary string. Please enter a valid Name ID:");
 			nameID = get();
 		}
+
 		log("Enter your Numeric Id:");
 		String numInput = get();
 		while(!numInput.matches("0|[1-9][0-9]*")) {//Makes sure the number ID is an actual number
 			log("Number ID should be a number. Please enter a valid Number ID:");
 			numInput = get();
 		}
+
 		numID = Integer.parseInt(numInput);
 		log("Enter the address of the introducer:");
 		introducer = get();
@@ -98,6 +102,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 			log("Invalid IP. Please enter a valid IP address ('none' if original node): ");
 			introducer = get();
 		}
+
 		if(introducer.equalsIgnoreCase("None")) insertable = false;
 		log("Enter RMI port: ");
 		numInput = get();
@@ -105,12 +110,13 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 			log("Invalid port. Enter a valid port number for RMI:");
 			numInput = get();
 		}
+
 		RMIPort = Integer.parseInt(numInput);
 		try {
 			address = Inet4Address.getLocalHost().getHostAddress() +":"+ RMIPort; //Used to get the current node address.
 			IP = Inet4Address.getLocalHost().getHostAddress();
 			log("My Address is :" + address);
-		}catch(UnknownHostException e) {
+		} catch(UnknownHostException e) {
 			System.out.println("Couldn't fetch local Inet4Address. Please restart.");
 			System.exit(0);
 		}
@@ -349,64 +355,12 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 	 */
 	public String searchByNumID(int searchTarget){
 
-		int level = maxLevels;
-
 		if(lookup[0][0] == null && lookup[0][1] == null)
 			return address;
-		return searchNum(searchTarget,level);
+		return searchNum(searchTarget,maxLevels);
 
-//		int level = maxLevels ; // start search at the highest level
-//
-//		// cast target ID and this node's ID to integers not to use parsing several times again
-//		int numIDInt = Integer.parseInt(numID);
-//		int targetInt = Integer.parseInt(targetNum);
-//		// If the introducer exists only
-//		if(lookup[0][0] == null && lookup[0][1] == null) {
-//			return address+ ":" + RMIPort;
-//		}
-//		// The Target is on the right of numID
-//		else if (numIDInt < targetInt) {
-//			String next = null ;
-//			// as long as there is no right node keep going down
-//			while(level >= 0 && lookup[level][1] == null)
-//				level--;
-//			if(level < 0)
-//				return next;
-//			next = lookup[level][1].getAddress();
-//			while(level >= 0) {
-//				RMIInterface nextRMI = getRMI(next);
-//				if(nextRMI.getRightNode(level) != null) {
-//					RMIInterface nextOfNextRMI = getRMI(nextRMI.getRightNode(level));
-//					if(Integer.parseInt(nextOfNextRMI.getNumID()) < targetInt)
-//						next = nextRMI.getRightNode(level);
-//					else if (Integer.parseInt(nextOfNextRMI.getNumID()) == targetInt) // if found return it
-//						return nextRMI.getRightNode(level);
-//					else  level--; // otherwise go down a level
-//				}else level--;
-//			}
-//			return next ;
-//		}
-//		else{ // the target is to the left of the current node.
-//			String next = null;
-//			while(level >= 0 && lookup[level][0] == null)
-//				level--;
-//			if(level < 0)
-//				return next;
-//			next = lookup[level][0].getAddress();
-//			while(level >= 0) {
-//				RMIInterface nextRMI = getRMI(next);
-//				if(nextRMI.getLeftNode(level) != null) {
-//					RMIInterface nextOfNextRMI = getRMI(nextRMI.getLeftNode(level));
-//					if(Integer.parseInt(nextOfNextRMI.getNumID()) > targetInt)
-//							next = nextRMI.getLeftNode(level);
-//					else if (Integer.parseInt(nextOfNextRMI.getNumID()) == targetInt)
-//						return nextRMI.getLeftNode(level);
-//					else level--;
-//				}else level--;
-//			}
-//			return next ;
-//		}
 	}
+
 	// 1: right
 	// 0: left
 	public String searchName(String searchTarget,int level,int direction) throws RemoteException{
