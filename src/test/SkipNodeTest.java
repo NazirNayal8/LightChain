@@ -1,16 +1,17 @@
 public class SkipNodeTest {
+
     public void SearchNumIDTest() {
-
-
-        // TODO: populate lookupTable
-        NodeInfo[][] lookupTable = new NodeInfo[][] {
-            { new NodeInfo(), new NodeInfo() },
-                { new NodeInfo(), new NodeInfo() },
-                { new NodeInfo(), new NodeInfo() },
-                { new NodeInfo(), new NodeInfo() },
-                { new NodeInfo(), new NodeInfo() },
-                { new NodeInfo(), new NodeInfo() },
+        // TODO: populate lookup Table
+        NodeInfo lookupTable[][] =
+        {
+            { new NodeInfo(/* add */), new NodeInfo(/* add */) },
+            { new NodeInfo(/* add */), new NodeInfo(/* add */) },
+            { new NodeInfo(/* add */), new NodeInfo(/* add */) },
+            { new NodeInfo(/* add */), new NodeInfo(/* add */) },
+            { new NodeInfo(/* add */), new NodeInfo(/* add */) },
+            { new NodeInfo(/* add */), new NodeInfo(/* add */) },
         };
+
 
         class TestCase {
             public int     numID;
@@ -18,26 +19,27 @@ public class SkipNodeTest {
             public String  output;
 
             public TestCase(int numID, int level, String output) {
-                this.numID = numID;
-                this.level = level;
+                this.numID  = numID;
+                this.level  = level;
                 this.output = output;
             }
         }
 
 
         // Initialize node with the given lookupTable
+        // TODO: Complete the iniialization. Make sure there is a way to pass
+        // the lookup Table to "node"
         SkipNode node = new SkipNode();
 
-
         // TODO: populate test table
-        TestCase tt[] = new TestCase[]{
-                new TestCase(),
-                new TestCase(),
-                new TestCase(),
-                new TestCase(),
-                new TestCase(),
-                new TestCase(),
-                new TestCase(),
+        TestCase tt[] = {
+            new TestCase(/* add */),
+            new TestCase(/* add */),
+            new TestCase(/* add */),
+            new TestCase(/* add */),
+            new TestCase(/* add */),
+            new TestCase(/* add */),
+            new TestCase(/* add */),
         };
 
 
