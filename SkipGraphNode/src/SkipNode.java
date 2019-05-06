@@ -25,8 +25,8 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 
 	// General Notes :
 	// Try defining a function that gets an IP and return RMIInterface instance
-	// Currently we are assuming that RMI port for each node is 1099
-	// In the future, different ports could be used.
+	// Currently we are assuming that RMI port for each node is 1099 --NO LONGER TRUE
+	// In the future, different ports could be used. --Current implementation
 
 	public static void main(String args[]) {
 
@@ -315,8 +315,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 			log("Remote Exception thrown in insert function.");
 		}
 	}
-
-	public String searchNum(int targetInt,int level){
+	public String searchNum(int targetInt,int level, int numIDOfNode){//Modified in order to facilitate testing
 		log("Search at: "+address);
 		if(numID == targetInt)
 			return address ;
@@ -327,7 +326,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 				return address;
 			RMIInterface rightRMI = getRMI(lookup[level][1].getAddress());
 			try{
-				return rightRMI.searchNum(targetInt,level);
+				return rightRMI.searchNum(targetInt,level, lookup[level][1].getNumID());
 			}catch(Exception e) {
 				log("Exception in searchNum. Target: "+targetInt);
 			}
@@ -339,7 +338,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 				return address;
 			RMIInterface leftRMI = getRMI(lookup[level][0].getAddress());
 			try{
-				return leftRMI.searchNum(targetInt, level);
+				return leftRMI.searchNum(targetInt, level, lookup[level][0].getNumID());
 			}catch(Exception e) {
 				log("Exception in searchNum. Target: "+targetInt);
 			}
@@ -356,8 +355,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 
 		if(lookup[0][0] == null && lookup[0][1] == null)
 			return address;
-		return searchNum(searchTarget,maxLevels);
-
+		return searchNum(searchTarget,level,numID);// Last argument added just for testing
 	}
 
 	// 1: right
@@ -560,5 +558,11 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 	public static String get() {
 		String response = in.nextLine();
 		return response;
+	}
+
+
+	public void setLookupTable(NodeInfo[][] newLookupTable) throws RemoteException { //For Testing purposes
+		lookup = newLookupTable;
+		maxLevels = lookup.length-1;
 	}
 }
