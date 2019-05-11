@@ -12,14 +12,14 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 
 
 	private static final long serialVersionUID = 1L;
-	public static String address;
-	public static String nameID;
-	public static int numID;
-	public static String IP ;
-	public static NodeInfo[][] lookup ;
-	public static int maxLevels = 5;
-	public static String introducer;
-	public static int RMIPort = 1099;
+	public  static String address;
+	public  static String nameID;
+	public  static int numID;
+	public  static String IP ;
+	public  static NodeInfo[][] lookup ;
+	public  static int maxLevels = 5;
+	public  static String introducer;
+	public  static int RMIPort = 1099;
 	private static boolean insertable;
 	private static Scanner in = new Scanner(System.in);
 
@@ -84,6 +84,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 			log("Rebinding Successful");
 			String st = Inet4Address.getLocalHost().getHostAddress();
 			System.setProperty("java.rmi.server.hostname",st);
+			address = Inet4Address.getLocalHost().getHostAddress() +":"+ RMIPort; //Used to get the current node address.hh
 			System.out.println("RMI Server proptery set. Inet4Address: "+st);
 		}catch (UnknownHostException e) {
 			System.err.println("Unknown Host Exception in constructor. Please terminate the program and try again.");
@@ -333,7 +334,6 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 		}
 	}
 	public String searchNum(int targetInt,int level, int numIDOfNode){//Modified in order to facilitate testing
-		log("Search at: "+address);
 		if(numID == targetInt)
 			return address ;
 		if(numID < targetInt) {
@@ -372,7 +372,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 
 		if(lookup[0][0] == null && lookup[0][1] == null)
 			return address;
-		return searchNum(searchTarget,level,numID);// Last argument added just for testing
+		return searchNum(searchTarget,maxLevels,numID);// Last argument added just for testing
 	}
 
 	// 1: right
