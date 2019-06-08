@@ -75,7 +75,7 @@ public class SkipNodeTest {
             new TestCase(0,  5,  4),
         };
 
-        mockInterface mock = new mockInterface(tt1, server);
+        mockNode mock = new mockNode(tt1, server);
         Registry reg = LocateRegistry.createRegistry(PORT);
         reg.rebind("RMIImpl", mock);
 
@@ -101,7 +101,7 @@ public class SkipNodeTest {
     }
 }
 
-class mockInterface extends UnicastRemoteObject implements RMIInterface {
+class mockNode extends UnicastRemoteObject implements RMIInterface {
 
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED   = "\u001B[31m";
@@ -120,7 +120,7 @@ class mockInterface extends UnicastRemoteObject implements RMIInterface {
         System.out.println("=== TEST ===");
     }
 
-    public mockInterface(TestCase tt[], RMIInterface server) throws RemoteException {
+    public mockNode(TestCase tt[], RMIInterface server) throws RemoteException {
         this.tt = tt;
         this.server = server;
     }
