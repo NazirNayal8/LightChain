@@ -91,6 +91,22 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 			System.err.println("Unknown Host Exception in constructor. Please terminate the program and try again.");
 		}
 	}
+
+	protected SkipNode(Configuration conf) throws RemoteException{
+		super();
+		try {
+            setInfo();
+			Registry reg = LocateRegistry.createRegistry(RMIPort);
+			reg.rebind("RMIImpl", this);
+			log("Rebinding Successful");
+			String st = Inet4Address.getLocalHost().getHostAddress();
+			System.setProperty("java.rmi.server.hostname",st);
+			System.out.println("RMI Server proptery set. Inet4Address: "+st);
+		}catch (UnknownHostException e) {
+			System.err.println("Unknown Host Exception in constructor. Please terminate the program and try again.");
+		}
+	}
+
 	/*
 	 * This method initializes the information of the current node
 	 * and prints them to console
@@ -606,6 +622,12 @@ class Configuration {
     private String port        = "1099";
 
 
+    public Configuration(String introducer, String nameID, string numID, string port) {
+        this.introducer = introducer;
+        this.nameID     = nameID;
+        this.numID      = numID;
+        this.port       = port;
+    }
 
     public Configuration(String configPath) {
         this.configPath = configPath;
