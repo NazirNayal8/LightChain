@@ -76,9 +76,9 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 	protected SkipNode(String nameID, int numID, int port) throws RemoteException{
 		super();
 		try {
-			this.RMIPort=port;
-			this.nameID=nameID;
-			this.numID=numID;
+			this.RMIPort = port;
+			this.nameID  = nameID;
+			this.numID   = numID;
 			Registry reg = LocateRegistry.createRegistry(RMIPort);
 			reg.rebind("RMIImpl", this);
 			log("Rebinding Successful");

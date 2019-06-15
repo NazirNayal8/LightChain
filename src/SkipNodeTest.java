@@ -1,4 +1,6 @@
+import java.net.MalformedURLException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -9,14 +11,57 @@ public class SkipNodeTest {
     private static final int PORT = 2039;
     private static final int serverPORT = 1999;
 
-    public static void SearchNumIDTest() throws Exception {
+    public static void InsertTest() throws RemoteException {
+
+        // Creating nodes, they should construct the following graph
+        // with respect to the node 51
+        // level 0:   43<-L --- R->59
+        // level 1:   43<-L --- R->59
+        // level 2:   43<-L --- R->59
+        // level 3: null<-L --- R->59
+        // level 4: null<-L --- R->76
+        // level 5: null<-L --- R->null
+        SkipNode nodes[] = {
+            new SkipNode("00000", 27, 1234),
+            new SkipNode("10000", 35, 1235),
+            new SkipNode("11000", 43, 1236),
+            new SkipNode("11100", 51, 1237),
+            new SkipNode("11110", 59, 1238),
+            new SkipNode("11111", 67, 1239),
+            new SkipNode("11011", 75, 1240),
+        };
+
+
+
+
+        // Creating nodes, they should construct the following graph
+        // with respect to the node 51
+        // level 0:   43<-L --- R->59
+        // level 1:   43<-L --- R->59
+        // level 2:   43<-L --- R->59
+        // level 3: null<-L --- R->59
+        // level 4: null<-L --- R->76
+        // level 5: null<-L --- R->null
+
+        SkipNode nodes1[] = {
+            new SkipNode("00011", 50, 1234),
+            new SkipNode("10000", 40, 1235),
+            new SkipNode("11000", 0, 1236),
+            new SkipNode("11100", 51, 1237),
+            new SkipNode("11110", 100, 1238),
+            new SkipNode("11111", 80, 1239),
+            new SkipNode("00010", 52, 1240),
+        };
+    }
+
+    public static void SearchNumIDTest() throws RemoteException, MalformedURLException, NotBoundException {
 
         NodeInfo lookupTable1[][] = {
-  { new NodeInfo("127.0.0.1:" + PORT, 13, "10101"), new NodeInfo("127.0.0.1:" + PORT, 16, "00101") },
-  { new NodeInfo("127.0.0.1:" + PORT, 11, "01100"), new NodeInfo("127.0.0.1:" + PORT, 20, "01110") },
-  { new NodeInfo("127.0.0.1:" + PORT, 12, "00001"), new NodeInfo("127.0.0.1:" + PORT, 19, "00101") },
-  { new NodeInfo("127.0.0.1:" + PORT, 13, "00111"), new NodeInfo("127.0.0.1:" + PORT, 17, "00110") },
-  { new NodeInfo("127.0.0.1:" + PORT, 10, "01011"), new NodeInfo("127.0.0.1:" + PORT, 31, "01001") }, };
+            { new NodeInfo("127.0.0.1:" + PORT, 13, "10101"), new NodeInfo("127.0.0.1:" + PORT, 16, "00101") },
+            { new NodeInfo("127.0.0.1:" + PORT, 11, "01100"), new NodeInfo("127.0.0.1:" + PORT, 20, "01110") },
+            { new NodeInfo("127.0.0.1:" + PORT, 12, "00001"), new NodeInfo("127.0.0.1:" + PORT, 19, "00101") },
+            { new NodeInfo("127.0.0.1:" + PORT, 13, "00111"), new NodeInfo("127.0.0.1:" + PORT, 17, "00110") },
+            { new NodeInfo("127.0.0.1:" + PORT, 10, "01011"), new NodeInfo("127.0.0.1:" + PORT, 31, "01001") }, };
 
         NodeInfo lookupTable2[][] = {
             { new NodeInfo("127.0.0.1:" + PORT, 14, "01100"), new NodeInfo("127.0.0.1:" + PORT, 16, "01110") },
