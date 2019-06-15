@@ -25,6 +25,8 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 	private static boolean insertable;
 	private static Scanner in = new Scanner(System.in);
 
+	private static Configuration conf;
+	
 	// General Notes :
 	// Try defining a function that gets an IP and return RMIInterface instance
 	// Currently we are assuming that RMI port for each node is 1099 --NO LONGER TRUE
@@ -34,7 +36,6 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 
 		lookup = new NodeInfo[maxLevels+1][2]; // Initialize size of lookup table
 
-		setInfo();
 
 		try {
 
@@ -46,7 +47,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 
 			while(true) {
 				printMenu();
-                // Change here
+                // Change 
 				skipNode.ask();
 			}
 
@@ -69,6 +70,8 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 	protected SkipNode() throws RemoteException{
 		super();
 		try {
+	        this.conf = new Configuration();
+
 			String st = Inet4Address.getLocalHost().getHostAddress();
 			System.setProperty("java.rmi.server.hostname",st);
 			System.out.println("RMI Server proptery set. Inet4Address: "+st);
@@ -80,6 +83,8 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 	protected SkipNode(String nameID, int numID, int port) throws RemoteException{
 		super();
 		try {
+	        this.conf = new Configuration();
+
 			this.RMIPort = port;
 			this.nameID  = nameID;
 			this.numID   = numID;
@@ -95,14 +100,27 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 		}
 	}
 
+	protected SkipNode(Configuration conf) throws RemoteException{
+		super();
+		try {
+			this.conf = conf;
+            setInfo();
+			Registry reg = LocateRegistry.createRegistry(RMIPort);
+			reg.rebind("RMIImpl", this);
+			log("Rebinding Successful");
+			String st = Inet4Address.getLocalHost().getHostAddress();
+			System.setProperty("java.rmi.server.hostname",st);
+			System.out.println("RMI Server proptery set. Inet4Address: "+st);
+		}catch (UnknownHostException e) {
+			System.err.println("Unknown Host Exception in constructor. Please terminate the program and try again.");
+		}
+	}
+
 	/*
 	 * This method initializes the information of the current node
 	 * and prints them to console
 	 */
 	public static void setInfo() {
-        Configuration conf = new Configuration();
-        conf.parseConfig();
-
 		nameID = conf.getNameID();
 		if(!nameID.matches("[0-1]+")) {
 			log("config err: nameID cannot be " + nameID);
@@ -237,6 +255,9 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 			String right = null;
 
 			RMIInterface introRMI = getRMI(introducer);
+			System.out.println("here is the guy: " + introducer);
+
+			System.out.println("here is the guy: " + introRMI.getNameID());
 			String position = introRMI.searchByNumID(numID);
 
 			if(position == null) {
@@ -612,13 +633,22 @@ class Configuration {
     private String port        = "1099";
 
 
+    public Configuration(String introducer, String nameID, String numID, String port) {
+        this.introducer = introducer;
+        this.nameID     = nameID;
+        this.numID      = numID;
+        this.port       = port;
+    }
 
     public Configuration(String configPath) {
         this.configPath = configPath;
+       parseConfig();
+
     }
 
     public Configuration() {
         this.configPath = System.getProperty("user.dir") + "/node.conf";
+        parseConfig();
     }
 
     public void parseConfig() {

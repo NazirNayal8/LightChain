@@ -7,6 +7,10 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 public class SkipNodeTest {
+	
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_RED   = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
 
     private static final int PORT = 2039;
     private static final int serverPORT = 1999;
@@ -20,19 +24,44 @@ public class SkipNodeTest {
         // level 2:   43<-L --- R->59
         // level 3: null<-L --- R->59
         // level 4: null<-L --- R->76
-        // level 5: null<-L --- R->null
-        SkipNode nodes[] = {
-            new SkipNode("00000", 27, 1234),
-            new SkipNode("10000", 35, 1235),
-            new SkipNode("11000", 43, 1236),
-            new SkipNode("11100", 51, 1237),
-            new SkipNode("11110", 59, 1238),
-            new SkipNode("11111", 67, 1239),
-            new SkipNode("11011", 75, 1240),
+
+        NodeInfo lookupTable1[][] = {
+            { new NodeInfo("127.0.0.1:" + 1234, 43,   "11000"), new NodeInfo("127.0.0.1:" + 1234, 59, "11110") },
+            { new NodeInfo("127.0.0.1:" + 1234, 43,   "11000"), new NodeInfo("127.0.0.1:" + 1234, 59, "11110") },
+            { new NodeInfo("127.0.0.1:" + 1234, 43,   "11000"), new NodeInfo("127.0.0.1:" + 1234, 59, "11110") },
+            { null,                                             new NodeInfo("127.0.0.1:" + 1234, 59, "11110") },
+            { null,                                             new NodeInfo("127.0.0.1:" + 1234, 75, "11011") },
         };
 
 
+        SkipNode nodes[] = {
+            new SkipNode(new Configuration("none",           "00000", "27", "1234")),
+            new SkipNode(new Configuration("127.0.0.1:1234", "10000", "35", "1235")),
+            new SkipNode(new Configuration("127.0.0.1:1234", "11000", "43", "1236")),
+            new SkipNode(new Configuration("127.0.0.1:1234", "11100", "51", "1237")),
+            new SkipNode(new Configuration("127.0.0.1:1234", "11110", "59", "1238")),
+            new SkipNode(new Configuration("127.0.0.1:1234", "11111", "67", "1239")),
+            new SkipNode(new Configuration("127.0.0.1:1234", "11011", "75", "1240")),
+        };
 
+        for (SkipNode n : nodes) {
+            if(n.getNumID() == 51) {
+                continue;
+            }
+            n.insert();
+        }
+
+
+        for(int lvl = 0; lvl < 5; lvl++) {
+            if(nodes[3].lookup[lvl][0] ==  lookupTable1[lvl][0]) {
+                System.err.println(ANSI_RED+"Error" + ANSI_RESET + ":   Expected: " + lookupTable1[lvl][0] + ". Got: " + nodes[3].lookup[lvl][0]);
+            }
+
+            if(nodes[3].lookup[lvl][1] ==  lookupTable1[lvl][1]) {
+                System.err.println(ANSI_RED+"Error" + ANSI_RESET + ":   Expected: " + lookupTable1[lvl][1] + ". Got: " + nodes[3].lookup[lvl][1]);
+            }
+
+        }
 
         // Creating nodes, they should construct the following graph
         // with respect to the node 51
@@ -43,15 +72,15 @@ public class SkipNodeTest {
         // level 4: null<-L --- R->76
         // level 5: null<-L --- R->null
 
-        SkipNode nodes1[] = {
-            new SkipNode("00011", 50, 1234),
-            new SkipNode("10000", 40, 1235),
-            new SkipNode("11000", 0, 1236),
-            new SkipNode("11100", 51, 1237),
-            new SkipNode("11110", 100, 1238),
-            new SkipNode("11111", 80, 1239),
-            new SkipNode("00010", 52, 1240),
-        };
+        // SkipNode nodes1[] = {
+        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "00011", 50, 1234)),
+        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "10000", 40, 1235)),
+        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "11000", 0, 1236)),
+        //     new SkipNode(new Configuration("none",                  "11100", 51, 1237)),
+        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "11110", 100, 1238)),
+        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "11111", 80, 1239)),
+        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "00010", 52, 1240)),
+        // };
     }
 
     public static void SearchNumIDTest() throws RemoteException, MalformedURLException, NotBoundException {
@@ -138,7 +167,8 @@ public class SkipNodeTest {
 
     public static void main(String args[]) {
         try {
-            SearchNumIDTest();
+        //    SearchNumIDTest();
+        	InsertTest();
         } catch (Exception e) {
             e.printStackTrace();
         }
