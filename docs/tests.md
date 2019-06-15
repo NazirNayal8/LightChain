@@ -44,3 +44,48 @@ tests is a matter of calling the `runTests` method of the mockNode:
 
 ### # InsertNode Tests
 
+To test node insertion, one can construct a cluster of nodes, each with a known
+numID and URL, connected them to one introducer, and call the insert method on
+them. This will result in the nodes using the  RMI protocol asking the introducer
+to add them to the skipGraph. After the insertion of all the nodes is complete.
+By comparing the introducer's lookup table with the expected lookup table, we can
+insure that the method is working correctly.
+
+Example:
+```java
+NodeInfo lookupTable[][] = {
+//                       node URL,      port, numID, nameID                 node URL,      port, numID, nameID
+          { new NodeInfo("127.0.0.1:" + 1234, 43,    "11000"), new NodeInfo("127.0.0.1:" + 1234, 59,    "11110") },
+          { new NodeInfo("127.0.0.1:" + 1234, 43,    "11000"), new NodeInfo("127.0.0.1:" + 1234, 59,    "11110") },
+          { new NodeInfo("127.0.0.1:" + 1234, 43,    "11000"), new NodeInfo("127.0.0.1:" + 1234, 59,    "11110") },
+          { null,                                              new NodeInfo("127.0.0.1:" + 1234, 59,    "11110") },
+          { null,                                              new NodeInfo("127.0.0.1:" + 1234, 75,    "11011") },
+      };
+```
+
+Notice that all the nodes have the same introducer. However there can be other
+bugs when there is a tree of introducer, so other configurations should be tested
+aswell.
+
+After constructing the expected lookup table, write an array of nodes that should
+theoretically generate this lookup table.
+
+```java
+//                                    introducer,       nameID, numID, port
+SkipNode nodes1[] = {
+      new SkipNode(new Configuration("none",           "00000", "27",  "1234")),
+      new SkipNode(new Configuration("127.0.0.1:1234", "10000", "35",  "1235")),
+      new SkipNode(new Configuration("127.0.0.1:1234", "11000", "43",  "1236")),
+      new SkipNode(new Configuration("127.0.0.1:1234", "11100", "51",  "1237")),
+      new SkipNode(new Configuration("127.0.0.1:1234", "11110", "59",  "1238")),
+      new SkipNode(new Configuration("127.0.0.1:1234", "11111", "67",  "1239")),
+      new SkipNode(new Configuration("127.0.0.1:1234", "11011", "75",  "1240")),
+  };
+```
+
+Now looping over this array and calling the insert() method should generate the
+expected lookup table in the introducer node.
+
+
+Checking that is done by looping over the lookup Table and comparing it with the
+expected lookup Table and reporting the results.

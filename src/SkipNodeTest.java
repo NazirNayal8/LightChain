@@ -34,7 +34,7 @@ public class SkipNodeTest {
         };
 
 
-        SkipNode nodes[] = {
+        SkipNode nodes1[] = {
             new SkipNode(new Configuration("none",           "00000", "27", "1234")),
             new SkipNode(new Configuration("127.0.0.1:1234", "10000", "35", "1235")),
             new SkipNode(new Configuration("127.0.0.1:1234", "11000", "43", "1236")),
@@ -44,21 +44,23 @@ public class SkipNodeTest {
             new SkipNode(new Configuration("127.0.0.1:1234", "11011", "75", "1240")),
         };
 
-        for (SkipNode n : nodes) {
+        for (SkipNode n : nodes1) {
             if(n.getNumID() == 51) {
                 continue;
             }
             n.insert();
         }
 
-
+        
         for(int lvl = 0; lvl < 5; lvl++) {
-            if(nodes[3].lookup[lvl][0] ==  lookupTable1[lvl][0]) {
-                System.err.println(ANSI_RED+"Error" + ANSI_RESET + ":   Expected: " + lookupTable1[lvl][0] + ". Got: " + nodes[3].lookup[lvl][0]);
+            if(nodes1[3].lookup[lvl][0] ==  lookupTable1[lvl][0]) {
+                System.err.println(ANSI_RED+"Error" + ANSI_RESET + ":   Expected: " + lookupTable1[lvl][0] + ". Got: " + nodes1[3].lookup[lvl][0]);
+            } else {
+            	System.out.println("success 1");
             }
 
-            if(nodes[3].lookup[lvl][1] ==  lookupTable1[lvl][1]) {
-                System.err.println(ANSI_RED+"Error" + ANSI_RESET + ":   Expected: " + lookupTable1[lvl][1] + ". Got: " + nodes[3].lookup[lvl][1]);
+            if(nodes1[3].lookup[lvl][1] ==  lookupTable1[lvl][1]) {
+            	System.out.println("success 1");
             }
 
         }
@@ -71,16 +73,47 @@ public class SkipNodeTest {
         // level 3: null<-L --- R->59
         // level 4: null<-L --- R->76
         // level 5: null<-L --- R->null
+        
+        NodeInfo lookupTable2[][] = {
+                { new NodeInfo("127.0.0.1:" + 2237, 50,   "00011"), new NodeInfo("127.0.0.1:" + 2237, 52, "00010") },
+                { new NodeInfo("127.0.0.1:" + 2237, 40,   "10000"), new NodeInfo("127.0.0.1:" + 2237, 80, "11111") },
+                { new NodeInfo("127.0.0.1:" + 2237, 0,    "11000"), new NodeInfo("127.0.0.1:" + 2237, 80, "11111") },
+                { null,                                             new NodeInfo("127.0.0.1:" + 2237, 80, "11111") },
+                { null,                                             null},
+            };
 
-        // SkipNode nodes1[] = {
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "00011", 50, 1234)),
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "10000", 40, 1235)),
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "11000", 0, 1236)),
-        //     new SkipNode(new Configuration("none",                  "11100", 51, 1237)),
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "11110", 100, 1238)),
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "11111", 80, 1239)),
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "00010", 52, 1240)),
-        // };
+
+         SkipNode nodes2[] = {
+             new SkipNode(new Configuration("127.0.0.1:2237", "00011", "50", "2234")),
+             new SkipNode(new Configuration("127.0.0.1:2237", "10000", "40", "2235")), 
+             new SkipNode(new Configuration("127.0.0.1:2237", "11000", "0", "2236")),
+             new SkipNode(new Configuration("none",           "11100", "51", "2237")),
+             new SkipNode(new Configuration("127.0.0.1:2237", "11110", "100", "2238")),
+             new SkipNode(new Configuration("127.0.0.1:2237", "11111", "80", "2239")),
+             new SkipNode(new Configuration("127.0.0.1:2237", "00010", "52", "2240")),
+         };
+         
+         for (SkipNode n : nodes2) {
+             if(n.getNumID() == 51) {
+                 continue;
+             }
+             n.insert();
+         }
+
+         
+         for(int lvl = 0; lvl < 5; lvl++) {
+             if(nodes2[3].lookup[lvl][0] ==  lookupTable2[lvl][0]) {
+                 System.err.println(ANSI_RED+"Error" + ANSI_RESET + ":   Expected: " + lookupTable2[lvl][0] + ". Got: " + nodes2[3].lookup[lvl][0]);
+             } else {
+             	System.out.println("success 2");
+             }
+
+             if(nodes2[3].lookup[lvl][1] ==  lookupTable2[lvl][1]) {
+             	System.out.println("success 2");
+             }
+
+         }
+
     }
 
     public static void SearchNumIDTest() throws RemoteException, MalformedURLException, NotBoundException {
