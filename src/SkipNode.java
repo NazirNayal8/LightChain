@@ -645,7 +645,7 @@ class Configuration {
             System.exit(1);
         }
 
-        nameID = prop.getProperty("introducer");
+        introducer = prop.getProperty("introducer");
         nameID = prop.getProperty("nameID");
         numID  = prop.getProperty("numID");
         port   = prop.getProperty("port");
