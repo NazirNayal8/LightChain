@@ -6,20 +6,22 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Properties;
+import java.io.FileInputStream;
 import java.util.Scanner;
 
 public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 
 
 	private static final long serialVersionUID = 1L;
-	public  static String address;
-	public  static String nameID;
-	public  static int numID;
-	public  static String IP ;
-	public  static NodeInfo[][] lookup ;
-	public  static int maxLevels = 5;
-	public  static String introducer;
-	public  static int RMIPort = 1099;
+	public static String address;
+	public static String nameID;
+	public static int numID;
+	public static String IP ;
+	public static NodeInfo[][] lookup ;
+	public static int maxLevels = 5;
+	public static String introducer;
+	public static int RMIPort;
 	private static boolean insertable;
 	private static Scanner in = new Scanner(System.in);
 
@@ -44,19 +46,21 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 
 			while(true) {
 				printMenu();
+                // Change here
 				skipNode.ask();
 			}
 
-		} catch(RemoteException e) {
-		    System.out.println("Remote Exception in main method. Terminating.");
-		    e.printStackTrace();
-		    System.exit(1);
-		} catch(IOException e){
+		}catch(RemoteException e) {
+			System.out.println("Remote Exception in main method. Terminating.");
+			e.printStackTrace();
+			System.exit(1);
+		}catch(IOException e){
 			log("Error in Rebinding");
 			e.printStackTrace();
 		}
 
 		in.close();
+
 	}
 
 	/*
@@ -96,46 +100,47 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 	 * and prints them to console
 	 */
 	public static void setInfo() {
+        Configuration conf = new Configuration();
+        conf.parseConfig();
 
-		log("Enter your Name ID:");
-		nameID = get();
-		while(!nameID.matches("[0-1]+")) {//Makes sure the name ID is a binary string
-			log("Name ID should be a binary string. Please enter a valid Name ID:");
-			nameID = get();
+		nameID = conf.getNameID();
+		if(!nameID.matches("[0-1]+")) {
+			log("config err: nameID cannot be " + nameID);
+            System.exit(1);
 		}
 
-		log("Enter your Numeric Id:");
-		String numInput = get();
-		while(!numInput.matches("0|[1-9][0-9]*")) {//Makes sure the number ID is an actual number
-			log("Number ID should be a number. Please enter a valid Number ID:");
-			numInput = get();
+		String numInput = conf.getNumID();
+		if(!numInput.matches("0|[1-9][0-9]*")) {
+			log("config err: numID cannot be " + numInput);
+            System.exit(1);
 		}
 
 		numID = Integer.parseInt(numInput);
-		log("Enter the address of the introducer:");
-		introducer = get();
+
+		introducer = conf.getIntroducer();
 		insertable = true;
-		while(!(introducer.equalsIgnoreCase("None") || validateIP(introducer))) {
-			log("Invalid IP. Please enter a valid IP address ('none' if original node): ");
-			introducer = get();
+		if(!(introducer.equalsIgnoreCase("none") || validateIP(introducer))) {
+			log("config err: introducer IP cannot be " + introducer);
+            System.exit(1);
 		}
 
-		if(introducer.equalsIgnoreCase("None")) insertable = false;
-		log("Enter RMI port: ");
-		numInput = get();
-		while(!numInput.matches("0|[1-9][0-9]*")) {
-			log("Invalid port. Enter a valid port number for RMI:");
-			numInput = get();
+		if(introducer.equalsIgnoreCase("none")) insertable = false;
+
+		numInput = conf.getPort();
+		if(!numInput.matches("0|[1-9][0-9]*")) {
+			log("config err: port cannot be " + numInput);
+            System.exit(1);
 		}
 
 		RMIPort = Integer.parseInt(numInput);
+
 		try {
 			address = Inet4Address.getLocalHost().getHostAddress() +":"+ RMIPort; //Used to get the current node address.
 			IP = Inet4Address.getLocalHost().getHostAddress();
 			log("My Address is :" + address);
 		} catch(UnknownHostException e) {
 			System.out.println("Couldn't fetch local Inet4Address. Please restart.");
-			System.exit(0);
+			System.exit(1);
 		}
 		log("Your INFO:\nnameID: "+nameID+"\nnumID: "+numID+"\nintroducer: "+introducer);
 	}
@@ -159,6 +164,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 	/*
 	 * Gets the type of operation to be executed from the user
 	 * and executes the corresponding operation.
+     * TODO: Move to client side
 	 */
 	public void ask(){// throws MalformedURLException, RemoteException, NotBoundException {
         String input = get();
@@ -215,7 +221,6 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 			else
 				log("Right node at level "+lvl+" is:" + lookup[lvl][1].getAddress());
 		}
-
     }
 
 	/*
@@ -333,6 +338,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 			log("Remote Exception thrown in insert function.");
 		}
 	}
+
 	public String searchNum(int targetInt,int level, int numIDOfNode){//Modified in order to facilitate testing
 		if(numID == targetInt)
 			return address ;
@@ -369,6 +375,8 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 	 * @see RMIInterface#searchByNumID(java.lang.String)
 	 */
 	public String searchByNumID(int searchTarget){
+
+		int level = maxLevels;
 
 		if(lookup[0][0] == null && lookup[0][1] == null)
 			return address;
@@ -582,4 +590,65 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 		lookup = newLookupTable;
 		maxLevels = lookup.length-1;
 	}
+}
+
+
+
+// Configuration stores config needed to spin up a SkipGraph node
+// current fields:
+//      - introducer (address)
+//      - nameID
+//      - numID
+//      - port (RMI)
+
+class Configuration {
+    private String configPath;
+    Properties prop = new Properties();
+
+    // Fields
+    private String introducer  = "none";
+    private String nameID      = "nameID";
+    private String numID       = "0";
+    private String port        = "1099";
+
+
+
+    public Configuration(String configPath) {
+        this.configPath = configPath;
+    }
+
+    public Configuration() {
+        this.configPath = System.getProperty("user.dir") + "/node.conf";
+    }
+
+    public void parseConfig() {
+        try {
+            prop.load(new FileInputStream(configPath));
+        } catch(Exception e) {
+            System.err.println("could not open config file: " + configPath);
+            System.exit(1);
+        }
+
+        nameID = prop.getProperty("introducer");
+        nameID = prop.getProperty("nameID");
+        numID  = prop.getProperty("numID");
+        port   = prop.getProperty("port");
+    }
+
+
+    public String getIntroducer() {
+        return introducer;
+    }
+
+    public String getNameID() {
+        return nameID;
+    }
+
+    public String getNumID() {
+        return numID;
+    }
+
+    public String getPort() {
+        return port;
+    }
 }
