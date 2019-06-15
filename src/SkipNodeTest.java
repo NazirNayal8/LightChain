@@ -6,8 +6,15 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.assertEquals;
+
+import org.assertj.core.api.SoftAssertions;
+
 public class SkipNodeTest {
-	
+
+    private SoftAssertions softly = new SoftAssertions();
+
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED   = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
@@ -15,7 +22,8 @@ public class SkipNodeTest {
     private static final int PORT = 2039;
     private static final int serverPORT = 1999;
 
-    public static void InsertTest() throws RemoteException {
+    @Test
+    public void InsertTest() throws RemoteException {
 
         // Creating nodes, they should construct the following graph
         // with respect to the node 51
@@ -34,7 +42,7 @@ public class SkipNodeTest {
         };
 
 
-        SkipNode nodes[] = {
+        SkipNode nodes1[] = {
             new SkipNode(new Configuration("none",           "00000", "27", "1234")),
             new SkipNode(new Configuration("127.0.0.1:1234", "10000", "35", "1235")),
             new SkipNode(new Configuration("127.0.0.1:1234", "11000", "43", "1236")),
@@ -44,7 +52,7 @@ public class SkipNodeTest {
             new SkipNode(new Configuration("127.0.0.1:1234", "11011", "75", "1240")),
         };
 
-        for (SkipNode n : nodes) {
+        for (SkipNode n : nodes1) {
             if(n.getNumID() == 51) {
                 continue;
             }
@@ -53,14 +61,12 @@ public class SkipNodeTest {
 
 
         for(int lvl = 0; lvl < 5; lvl++) {
-            if(nodes[3].lookup[lvl][0] ==  lookupTable1[lvl][0]) {
-                System.err.println(ANSI_RED+"Error" + ANSI_RESET + ":   Expected: " + lookupTable1[lvl][0] + ". Got: " + nodes[3].lookup[lvl][0]);
+            try {
+                softly.assertThat(nodes1[3].lookup[lvl][0]).as("insert test at level: " + lvl).isEqualTo(lookupTable1[lvl][0]);
+                softly.assertThat(nodes1[3].lookup[lvl][1]).as("insert test at level: " + lvl).isEqualTo(lookupTable1[lvl][1]);
+            } catch (Exception e) {
+                System.out.println("lol");
             }
-
-            if(nodes[3].lookup[lvl][1] ==  lookupTable1[lvl][1]) {
-                System.err.println(ANSI_RED+"Error" + ANSI_RESET + ":   Expected: " + lookupTable1[lvl][1] + ". Got: " + nodes[3].lookup[lvl][1]);
-            }
-
         }
 
         // Creating nodes, they should construct the following graph
@@ -72,15 +78,48 @@ public class SkipNodeTest {
         // level 4: null<-L --- R->76
         // level 5: null<-L --- R->null
 
-        // SkipNode nodes1[] = {
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "00011", 50, 1234)),
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "10000", 40, 1235)),
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "11000", 0, 1236)),
-        //     new SkipNode(new Configuration("none",                  "11100", 51, 1237)),
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "11110", 100, 1238)),
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "11111", 80, 1239)),
-        //     new SkipNode(new Configuration("rmit://127.0.0.1:1237", "00010", 52, 1240)),
-        // };
+        NodeInfo lookupTable2[][] = {
+            { new NodeInfo("127.0.0.1:" + 2237, 50,   "00011"), new NodeInfo("127.0.0.1:" + 2237, 52, "00010") },
+            { new NodeInfo("127.0.0.1:" + 2237, 40,   "10000"), new NodeInfo("127.0.0.1:" + 2237, 80, "11111") },
+            { new NodeInfo("127.0.0.1:" + 2237, 0,    "11000"), new NodeInfo("127.0.0.1:" + 2237, 80, "11111") },
+            { null,                                             new NodeInfo("127.0.0.1:" + 2237, 80, "11111") },
+            { null,                                             null},
+        };
+
+
+        SkipNode nodes2[] = {
+            new SkipNode(new Configuration("127.0.0.1:2237", "00011", "50", "2234")),
+            new SkipNode(new Configuration("127.0.0.1:2237", "10000", "40", "2235")),
+            new SkipNode(new Configuration("127.0.0.1:2237", "11000", "0", "2236")),
+            new SkipNode(new Configuration("none",           "11100", "51", "2237")),
+            new SkipNode(new Configuration("127.0.0.1:2237", "11110", "100", "2238")),
+            new SkipNode(new Configuration("127.0.0.1:2237", "11111", "80", "2239")),
+            new SkipNode(new Configuration("127.0.0.1:2237", "00010", "52", "2240")),
+        };
+
+        for (SkipNode n : nodes2) {
+            if(n.getNumID() == 51) {
+                continue;
+            }
+            n.insert();
+        }
+
+
+        for(int lvl = 0; lvl < 5; lvl++) {
+            try {
+                softly.assertThat(nodes2[3].lookup[lvl][0]).as("insert test at level: " + lvl).isEqualTo(lookupTable2[lvl][0]);
+                softly.assertThat(nodes2[3].lookup[lvl][1]).as("insert test at level: " + lvl).isEqualTo(lookupTable2[lvl][1]);
+            } catch (Exception e) {
+                System.out.println("lol");
+
+            }
+        }
+
+        try {
+            softly.assertAll();
+        } catch (SoftAssertionError e) {
+            logAssertionErrorMessage("SoftAssertion errors example", e);
+        }
     }
 
     public static void SearchNumIDTest() throws RemoteException, MalformedURLException, NotBoundException {
@@ -167,8 +206,8 @@ public class SkipNodeTest {
 
     public static void main(String args[]) {
         try {
-        //    SearchNumIDTest();
-        	InsertTest();
+            //    SearchNumIDTest();
+            InsertTest();
         } catch (Exception e) {
             e.printStackTrace();
         }

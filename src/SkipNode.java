@@ -18,7 +18,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 	public static String nameID;
 	public static int numID;
 	public static String IP ;
-	public static NodeInfo[][] lookup ;
+	public static NodeInfo[][] lookup = new NodeInfo[6][2];
 	public static int maxLevels = 5;
 	public static String introducer;
 	public static int RMIPort;
@@ -85,6 +85,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface{
 		try {
 	        this.conf = new Configuration();
 
+	        
 			this.RMIPort = port;
 			this.nameID  = nameID;
 			this.numID   = numID;
