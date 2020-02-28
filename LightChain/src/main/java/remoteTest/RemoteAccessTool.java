@@ -19,8 +19,11 @@ import blockchain.Block;
 import blockchain.LightChainRMIInterface;
 import blockchain.Transaction;
 import simulation.SimLog;
+import skipGraph.LookupTable;
 import skipGraph.NodeInfo;
 import skipGraph.RMIInterface;
+
+import static simulation.Simulation.processData;
 
 public class RemoteAccessTool {
 	static String ip;
@@ -28,7 +31,7 @@ public class RemoteAccessTool {
 	static Scanner in = new Scanner(System.in);
 	static ArrayList<NodeInfo> data;
 //	private static ArrayList<Transaction> transactions;
-	static NodeInfo[][][] lookup;
+	static LookupTable lookup;
 	static String nameID;
 	static int numID;
 	static boolean skipInit = false;
@@ -63,12 +66,10 @@ public class RemoteAccessTool {
 			try {
 				nameID = node.getNameID();
 				numID = node.getNumID();
-				// data = node.getData();
-				// lookup = node.getLookupTable();
-				if (data == null || lookup == null) {
-					log("Couldn't fetch data and lookup properly. Please try again.");
-					continue;
-				}
+//				if (data == null || lookup == null) {
+//					log("Couldn't fetch data and lookup properly. Please try again.");
+//					continue;
+//				}
 				while (true) {
 					printMenu();
 					String input = get();
@@ -136,7 +137,7 @@ public class RemoteAccessTool {
 //						log("In case you want the lookup table of the original node enter 0.");
 //						log("Otherwise, enter the index of the data node ");
 //						int num = Integer.parseInt(get());
-						printLookup(0);
+//						printLookup(0);
 //						if(num < node.getDataNum())
 //							printLookup(num);
 //						else
@@ -144,20 +145,20 @@ public class RemoteAccessTool {
 					} else if (query == 6) {
 						printData();
 					} else if (query == 7) {
-						log("This is the current lookup table: ");
-						printLookup(0);
-						log("Enter the number of the node you want to connect to: (invalid number to abort)");
-						String st = get();
-						try {
-							int inp = Integer.parseInt(st);
-							NodeInfo swtch = lookup[inp / 2][inp % 2][0];
-							if (swtch == null)
-								throw new Exception();
-							if (promptSwitch(swtch))
-								break;
-						} catch (Exception e) {
-							log("Invalid number, aborting...");
-						}
+//						log("This is the current lookup table: ");
+//						printLookup(0);
+//						log("Enter the number of the node you want to connect to: (invalid number to abort)");
+//						String st = get();
+//						try {
+//							int inp = Integer.parseInt(st);
+//							NodeInfo swtch = lookup[inp / 2][inp % 2][0];
+//							if (swtch == null)
+//								throw new Exception();
+//							if (promptSwitch(swtch))
+//								break;
+//						} catch (Exception e) {
+//							log("Invalid number, aborting...");
+//						}
 					} else if (query == 8) {
 						pingStats();
 					} else if (query == 9) {
@@ -233,6 +234,11 @@ public class RemoteAccessTool {
 	private static ConcurrentHashMap<NodeInfo, TestingLog> TestingLogMap;
 
 	public static void startSim() {
+		try{
+			node.insertGenesis();
+		}catch (Exception e){
+			e.printStackTrace();
+		}
 		TestingLogMap = new ConcurrentHashMap<>();
 
 		// Grab all the nodes so we can communicate with them
@@ -261,12 +267,14 @@ public class RemoteAccessTool {
 		}
 		averagePace = Integer.parseInt(inp);
 
+		ConcurrentHashMap<NodeInfo, SimLog> map = new ConcurrentHashMap<>();
+
 		// Making threads to get the nodes to start functioning at the same time:
 		int sz = nodeList.size();
 		try {
 			CountDownLatch ltch = new CountDownLatch(sz);
 			for (int i = 0; i < sz; i++) {
-				SimThread cur = new SimThread(i, ltch, numTransactions, averagePace);
+				SimThread cur = new SimThread(i, ltch,map, numTransactions, averagePace);
 				cur.start();
 			}
 			ltch.await();
@@ -274,7 +282,9 @@ public class RemoteAccessTool {
 			e.printStackTrace();
 		}
 
-		printTestingLog();
+		long endTime = System.currentTimeMillis();
+
+		processData(map, numTransactions);
 	}
 
 	/*
@@ -524,6 +534,7 @@ public class RemoteAccessTool {
 		try {
 			curNode = node.searchByNumID(0);
 			while (curNode != null) {
+				System.out.println(curNode.getAddress());
 				addresses.add(curNode.getAddress());
 				RMIInterface curRMI = getRMI(curNode.getAddress());
 				curNode = curRMI.getRightNode(0, curNode.getNumID());
@@ -569,24 +580,24 @@ public class RemoteAccessTool {
 	 * Taken from SkipNode class. However, it needs to be implemented here so that
 	 * println would print here rather than in the other node.
 	 */
-
-	public static void printLookup(int num) {
-		try {
-			// lookup = node.getLookupTable();
-		} catch (Exception e) {
-			log("Couldn't update the lookup table properly. Aborting...");
-			return;
-		}
-		int cnt = (lookup.length - 1) * 2;
-		for (int i = lookup.length - 2; i >= 0; i--)// double check the initial value of i
-		{
-			cnt -= 2;
-			log(cnt + " " + ((lookup[i][0][num] == null) ? "null\t" : (lookup[i][0][num].getNameID() + "\t"))
-					+ (cnt + 1) + " "
-					+ ((lookup[i][1][num] == null) ? "null\t" : (lookup[i][1][num].getNameID() + "\t")));
-		}
-
-	}
+//
+//	public static void printLookup(int num) {
+//		try {
+//			// lookup = node.getLookupTable();
+//		} catch (Exception e) {
+//			log("Couldn't update the lookup table properly. Aborting...");
+//			return;
+//		}
+//		int cnt = lookup.getMaxLevels()*2;
+//		for (int i = lookup.getMaxLevels()-1; i >= 0; i--)// double check the initial value of i
+//		{
+//			log(cnt + " " + ((lookup.ge[i][0][num] == null) ? "null\t" : (lookup[i][0][num].getNameID() + "\t"))
+//					+ (cnt + 1) + " "
+//					+ ((lookup[i][1][num] == null) ? "null\t" : (lookup[i][1][num].getNameID() + "\t")));
+//			cnt -= 2;
+//		}
+//
+//	}
 
 	public static void printData() {
 		for (int i = 0; i < data.size(); ++i)
@@ -723,12 +734,14 @@ public class RemoteAccessTool {
 		int count;
 		int pace;
 		int ind;
+		ConcurrentHashMap<NodeInfo, SimLog> map;
 
-		public SimThread(int ind, CountDownLatch ltch, int count, int pace) {
+		public SimThread(int ind, CountDownLatch ltch,ConcurrentHashMap<NodeInfo, SimLog> map, int count, int pace) {
 			this.latch = ltch;
 			this.pace = pace;
 			this.count = count;
 			this.ind = ind;
+			this.map=map;
 		}
 
 		public void run() {
@@ -738,7 +751,7 @@ public class RemoteAccessTool {
 					curRMI.insertGenesis();
 				}
 				SimLog lg = curRMI.startSim(count, pace);
-				//TestingLogMap.put(nodeList.get(ind), lg);
+				map.put(nodeList.get(ind), lg);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}

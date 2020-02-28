@@ -68,7 +68,7 @@ public class Simulation {
 	}
 
 
-	private static void processData(ConcurrentHashMap<NodeInfo, SimLog> map,int iterations) {
+	public static void processData(ConcurrentHashMap<NodeInfo, SimLog> map,int iterations) {
 		processTransactions(map, iterations);
 		processMineAttempts(map, iterations);
 	}

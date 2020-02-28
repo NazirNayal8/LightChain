@@ -16,7 +16,7 @@ public class Util {
 
 	
 	protected static Scanner in = new Scanner(System.in);
-	public static final boolean local = true;
+	public static boolean local = true;
 	//If set to true, it would work fine on local networks without having to go through the hassle of 
 
 	

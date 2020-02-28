@@ -3,6 +3,7 @@ package skipGraph;
 import util.Const;
 import util.Util;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -13,7 +14,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  */
 
-public class LookupTable {
+public class LookupTable implements Serializable {
 	private int maxLevels;
 	private Map<Integer, NodeInfo> dataNodes;
 	private Map<Integer, Table> lookup;

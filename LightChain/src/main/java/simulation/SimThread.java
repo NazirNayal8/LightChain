@@ -12,7 +12,6 @@ import skipGraph.NodeInfo;
 import util.Util;
 
 public class SimThread extends Thread {
-	Thread t;
 	CountDownLatch latch;
 	int count;
 	int pace;

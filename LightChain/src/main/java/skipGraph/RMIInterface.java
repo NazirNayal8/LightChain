@@ -71,5 +71,4 @@ public interface RMIInterface extends Remote {
 	public PingLog pingStart(NodeInfo node, int freq) throws RemoteException;
 
 	public PingLog retroPingStart(NodeInfo node, int freq) throws RemoteException;
-
 }

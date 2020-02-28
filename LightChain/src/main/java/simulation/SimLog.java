@@ -1,9 +1,10 @@
 package simulation;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimLog {
+public class SimLog implements Serializable {
 
 	private boolean mode;
 	private List<TransactionLog> validTransactions;
