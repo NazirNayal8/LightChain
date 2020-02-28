@@ -6,6 +6,7 @@ import util.Util;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -96,7 +97,12 @@ public class LookupTable implements Serializable {
 	public void initializeNode(NodeInfo node) {
 		nodeBuffer = Util.assignNode(node);
 		tableBuffer = new Table();
-		tableBuffer.lockTable();
+		try {
+			tableBuffer.lockTable();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -314,9 +320,10 @@ public class LookupTable implements Serializable {
 
 		/**
 		 * locks the table for write operations
+		 * @throws InterruptedException
 		 */
-		public void lockTable() {
-			lock.writeLock().lock();
+		public void lockTable() throws InterruptedException {
+			lock.writeLock().tryLock(5,TimeUnit.SECONDS);
 		}
 
 		/**
