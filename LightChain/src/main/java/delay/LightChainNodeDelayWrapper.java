@@ -74,6 +74,12 @@ public class LightChainNodeDelayWrapper extends SkipNodeDelayWrapper implements 
     }
 
     @Override
+    public SimLog getSimLog() throws RemoteException {
+        before();
+        return innerNode.getSimLog();
+    }
+
+    @Override
     public Block insertGenesis() throws RemoteException {
         before();
         return innerNode.insertGenesis();

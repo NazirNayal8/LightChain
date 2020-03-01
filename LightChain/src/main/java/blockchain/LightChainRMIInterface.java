@@ -24,6 +24,8 @@ public interface LightChainRMIInterface extends RMIInterface {
 
 	public SimLog startSim(int numTransactions, int pace) throws RemoteException;
 
+	public SimLog getSimLog() throws RemoteException;
+
 	public Block insertGenesis() throws RemoteException;
 
 	// To shut down all instances

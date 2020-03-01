@@ -16,7 +16,6 @@ import org.apache.log4j.Logger;
 
 import hashing.Hasher;
 import hashing.HashingTools;
-import org.apache.log4j.Logger;
 import signature.DigitalSignature;
 import signature.SignedBytes;
 import simulation.SimLog;
@@ -25,11 +24,6 @@ import skipGraph.SkipNode;
 import util.Const;
 import util.Util;
 
-import java.rmi.Naming;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.security.PublicKey;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -51,7 +45,8 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 
 	/**
 	 * 
-	 * @param config     contains necessary information for the node to function
+	 * @param params contains necessary information for the node to function
+	 * @param RMIPort	 the RMI port to function on
 	 * @param introducer the address of the introducer node
 	 * @param isInitial  a flag signaling whether this node is the first node in the
 	 *                   network
@@ -591,7 +586,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 	/**
 	 * This method takes the hash of a transaction or a block and returns
 	 * 
-	 * @param hash hash of transaction or block whose validators are to be fetched
+	 * @param str hash of transaction or block whose validators are to be fetched
 	 * @return a list of validators for the given transactions
 	 */
 	public List<NodeInfo> getValidators(String str) {
@@ -928,6 +923,10 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return simLog;
+	}
+
+	public SimLog getSimLog() throws RemoteException{
 		return simLog;
 	}
 

@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import blockchain.Block;
+import blockchain.LightChainNode;
 import blockchain.LightChainRMIInterface;
 import blockchain.Transaction;
 import simulation.SimLog;
@@ -194,8 +195,11 @@ public class RemoteAccessTool {
 						Configuration.generateConfigFile(nodeList,
 								System.getProperty("user.dir") + File.separator + "Logs" + File.separator
 										+ "Configurations" + File.separator + "node_with_data" + ind + ".conf");
+					} else if(query == 17) {
+						getAndPrintSimLogs();
 					} else {
 						log("No matching query.");
+
 					}
 				}
 			} catch (Exception e) {
@@ -226,12 +230,69 @@ public class RemoteAccessTool {
 		log("14-Check if a node is reachable.");
 		log("15-Print logged exceptions");
 		log("16-Generate config file of skipGraph.");
+		log("17-Get and print sim logs");
 	}
 
 	/*
 	 * Start Simulation
 	 */
 	private static ConcurrentHashMap<NodeInfo, TestingLog> TestingLogMap;
+	private static int transactionCount;
+
+	public static void getAndPrintSimLogs(){
+		transactionCount=50;
+		String[] addresses = new String[]{"35.201.168.149:1099",
+				"35.204.239.78:12641",
+				"35.237.225.13:6023",
+				"34.65.83.48:25765",
+				"35.246.0.155:43541",
+				"35.244.32.159:48080",
+				"35.245.211.26:3454",
+				"34.90.11.35:31587",
+				"34.68.172.212:52725",
+				"35.221.125.131:57947",
+				"34.80.244.112:20438",
+				"34.68.199.6:36035",
+				"35.228.246.124:29209",
+				"35.199.102.35:8578",
+				"35.228.141.102:3249",
+				"35.245.68.164:14288",
+				"34.64.103.171:51931",
+				"35.186.165.181:44251",
+				"34.97.195.171:32804",
+				"34.87.13.139:10886",
+				"34.87.223.44:32796",
+				"35.242.196.37:52990",
+				"34.106.82.240:16956",
+				"34.82.30.42:20713",
+				"35.196.102.32:47626",
+				"34.77.22.24:45126",
+				"35.205.159.89:37529",
+				"34.92.58.138:4035",
+				"35.236.38.243:29860",
+				"34.65.53.140:47616",
+				"35.243.74.99:55169",
+				"35.201.31.7:56688"};
+		nodeList= new ArrayList<>();
+		for(String adrs : addresses){
+			try{
+				RMIInterface curRMI = getRMI(adrs);
+				nodeList.add(curRMI.getNode(curRMI.getNumID()));
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		ConcurrentHashMap<NodeInfo, SimLog> map = new ConcurrentHashMap<>();
+		for(NodeInfo tmp : nodeList){
+			try{
+				LightChainRMIInterface cur = getRMI(tmp.getAddress());
+				map.put(tmp, cur.getSimLog());
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+		processData(map, transactionCount);
+	}
 
 	public static void startSim() {
 		try{
@@ -258,6 +319,7 @@ public class RemoteAccessTool {
 			inp = get();
 		}
 		numTransactions = Integer.parseInt(inp);
+		transactionCount = numTransactions;
 
 		log("How often should a node insert a transaction in seconds? (60 means 1 transaction every 60 seconds)");
 		inp = get();
@@ -271,20 +333,12 @@ public class RemoteAccessTool {
 
 		// Making threads to get the nodes to start functioning at the same time:
 		int sz = nodeList.size();
-		try {
-			CountDownLatch ltch = new CountDownLatch(sz);
-			for (int i = 0; i < sz; i++) {
-				SimThread cur = new SimThread(i, ltch,map, numTransactions, averagePace);
-				cur.start();
-			}
-			ltch.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		CountDownLatch ltch = new CountDownLatch(sz);
+		for (int i = 0; i < sz; i++) {
+			SimThread cur = new SimThread(i, ltch,map, numTransactions, averagePace);
+			cur.start();
 		}
 
-		long endTime = System.currentTimeMillis();
-
-		processData(map, numTransactions);
 	}
 
 	/*

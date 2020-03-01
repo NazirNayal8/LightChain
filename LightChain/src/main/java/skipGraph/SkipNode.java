@@ -46,12 +46,8 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * Constructor for SkipNode class The node requires the following info to be
 	 * able to function:
 	 * 
-	 * @param maxLevels  number of levels of the skip graph
-	 * @param RMIPort    Port on which Skip Node is operating
-	 * @param IP         IP of Skip Node
-	 * @param numID      numerical ID of Skip Node
-	 * @param nameID     name ID of Skip Node
-	 * @param introducer the node that helps in inserting the current node
+	 * @param config     The configuration of the node. Contains the numID, nameID, and other important details required to initialize a SkipNode
+	 * @param introducer The address of the introducer
 	 * @param isInitial  Indicator that this node is an initial node in the
 	 *                   skipGraph
 	 */
@@ -94,9 +90,9 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * This version of the constructor is used as long as LightChainNode extends SkipNode
 	 * Because it defers RMI binding and insertion task to LightChainNode after setting
 	 * the correct information (numID and nameID
-	 * @param config
+	 * @param RMIPort
+	 * @param maxLevels
 	 * @param introducer
-	 * @param isInitial
 	 * @throws RemoteException
 	 */
 	public SkipNode(int RMIPort, int maxLevels, String introducer) throws RemoteException{
@@ -316,7 +312,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * @param level     The level in which a node is being inserted
 	 * @param direction At a certain level, the method go LEFT and RIGHT finding the
 	 *                  neighbors of the inserted node
-	 * @param num       The numerical ID of the node at which the search has arrived
+	 * @param nodeNumID       The numerical ID of the node at which the search has arrived
 	 * @param target    the name ID of the inserted node.
 	 * @return Right neighbor if direction is RIGHT, and left neighbor if direction
 	 *         is LEFT
@@ -381,7 +377,6 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * @param searchTarget numerical ID of target of search
 	 * @return NodeInfo of the target node if found, or closest node in case it was
 	 *         not found
-	 * @see RMIInterface#searchByNumID(java.lang.String)
 	 */
 	public NodeInfo searchByNumID(int searchTarget) {
 		logger.debug("Searching for " + searchTarget);
@@ -433,7 +428,6 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * @param targetInt the target of search
 	 * @param level     the level of skip graph at which we are searching
 	 * @return list of nodes on the search path
-	 * @see RMIInterface#searchNum(int, int)
 	 */
 	public List<NodeInfo> searchNumID(int numID, int targetInt, int level, List<NodeInfo> lst) throws RemoteException {	
 
@@ -441,7 +435,6 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 		if (numID != lookup.bufferNumID()) {
 			// get the data node (or main node) that is closest to the target search
 			num = getBestNum(targetInt);
-//			num = numID;
 			// Add the current node's info to the search list
 		} else {
 			logger.debug("Accessing Buffered Node " + RMIPort + " ...");
@@ -577,7 +570,6 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * @param level        the level at which search is happening
 	 * @param direction    direction of search currently
 	 * @return NodeInfo of result of search
-	 * @see RMIInterface#searchName(java.lang.String, int, int)
 	 */
 
 	public NodeInfo searchName(int numID, String searchTarget, int level, int direction) throws RemoteException {
