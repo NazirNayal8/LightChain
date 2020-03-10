@@ -119,15 +119,9 @@ public class SkipNodeDelayWrapper implements RMIInterface {
     }
 
     @Override
-    public List<NodeInfo> searchByNumIDHelper(int targetNum, List<NodeInfo> lst) throws RemoteException {
+    public NodeInfo searchNumID(int numID, int searchTarget, int level) throws RemoteException {
         before();
-        return innerNode.searchByNumIDHelper(targetNum, lst);
-    }
-
-    @Override
-    public List<NodeInfo> searchNumID(int numID, int searchTarget, int level, List<NodeInfo> lst) throws RemoteException {
-        before();
-        return innerNode.searchNumID(numID, searchTarget, level, lst);
+        return innerNode.searchNumID(numID, searchTarget, level);
     }
 
     @Override

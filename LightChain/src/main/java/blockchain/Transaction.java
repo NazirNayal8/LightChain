@@ -78,4 +78,17 @@ public class Transaction extends NodeInfo {
 		return levels;
 	}
 
+	public long getSize(){
+		long size = 0;
+		size+= prev.length()*2;
+		// Owner numID size
+		size+=4;
+		size+=cont.length()*2;
+		size+=hash.length()*2;
+		for(SignedBytes sig : sigma){
+			size+=sig.getSize();
+		}
+		return size;
+	}
+
 }

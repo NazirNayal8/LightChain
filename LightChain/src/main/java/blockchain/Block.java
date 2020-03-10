@@ -110,6 +110,24 @@ public class Block extends NodeInfo {
 			sb.append(transactionSet.get(i).toString());
 		return sb.toString();
 	}
-	
+
+
+	// returns the size of the object in bytes
+	public long getSize(){
+		long size = 0;
+		// Size of prev (each character is 2 bytes)
+		size+=prev.length() * 2;
+		size+=4;//Owner size
+		for(Transaction trx : transactionSet){
+			size+=trx.getSize();
+		}
+		size+=hash.length()*2;
+		for(SignedBytes sig : sigma){
+			size+=sig.getSize();
+		}
+		//numID size
+		size+=4;
+		return size;
+	}
 	
 }

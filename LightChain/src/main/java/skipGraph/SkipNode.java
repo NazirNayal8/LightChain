@@ -380,39 +380,12 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 */
 	public NodeInfo searchByNumID(int searchTarget) {
 		logger.debug("Searching for " + searchTarget);
-		try { 
-			List<NodeInfo> lst = new ArrayList<NodeInfo>();
-			lst = searchByNumIDHelper(searchTarget, lst);
-			return lst == null ? null : lst.get(lst.size() - 1);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	/**
-	 * A helper method for searchByNumID, it essentially starts the search operation
-	 * but it supplies the search with an empty list to collect the nodes on the
-	 * path of the search
-	 * 
-	 * @param searchTarget numerical ID to be searched
-	 * @param lst          the list which will collect the nodes on the search path
-	 * @return a list containing all nodes that have been encountered on the search
-	 *         path
-	 */
-	public List<NodeInfo> searchByNumIDHelper(int searchTarget, List<NodeInfo> lst) {
 		try {
-			
 			int level = lookup.getMaxLevels();
 			// route search to closest data node
 			int num = getBestNum(searchTarget);
-			if (lookup.get(num, Const.ZERO_LEVEL, Const.LEFT) == null
-					&& lookup.get(num, Const.ZERO_LEVEL, Const.RIGHT) == null) {
-				lst.add(lookup.get(num));
-				return lst;
-			}
-			return searchNumID(numID, searchTarget, level, lst);
+			return searchNumID(num, searchTarget, level);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -427,9 +400,9 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * @param numID     numerical ID of current node at which the search has arrived
 	 * @param targetInt the target of search
 	 * @param level     the level of skip graph at which we are searching
-	 * @return list of nodes on the search path
+	 * @return resultant node on the search path
 	 */
-	public List<NodeInfo> searchNumID(int numID, int targetInt, int level, List<NodeInfo> lst) throws RemoteException {	
+	public NodeInfo searchNumID(int numID, int targetInt, int level) throws RemoteException {
 
 		int num;
 		if (numID != lookup.bufferNumID()) {
@@ -440,10 +413,9 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 			logger.debug("Accessing Buffered Node " + RMIPort + " ...");
 			num = numID;
 		}
-		lst.add(lookup.get(num));
-		
+
 		if(num == targetInt)
-			return lst;
+			return lookup.get(num);
 		
 		// If the target is greater than the current node then we should search right
 		if (num < targetInt) {
@@ -455,16 +427,16 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 				level--;
 			// If there are no more levels to go down to return the current node
 			if (level < Const.ZERO_LEVEL) {
-				return lst;
+				return lookup.get(num);
 			}
 			// delegate the search to the right neighbor
 			RMIInterface rightRMI = getRMI(lookup.get(num, level, Const.RIGHT).getAddress());
 			try {
-				return rightRMI.searchNumID(lookup.get(num, level, Const.RIGHT).getNumID(), targetInt, level, lst);
+				return rightRMI.searchNumID(lookup.get(num, level, Const.RIGHT).getNumID(), targetInt, level);
 			} catch (StackOverflowError e) {
 				return null;
 			} catch (Exception e) {
-				return lst;
+				return lookup.get(num);
 			}
 		} else {
 			// If the target is less than the current node then we should search left
@@ -476,20 +448,16 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 				level--;
 			// If there are no more levels to go down to return the current node
 			if (level < Const.ZERO_LEVEL)
-				return lst;
+				return lookup.get(num);
 			// delegate the search to the left neighbor
 			RMIInterface leftRMI = getRMI(lookup.get(num, level, Const.LEFT).getAddress());
 			try {
-					return leftRMI.searchNumID(lookup.get(num, level, Const.LEFT).getNumID(), targetInt, level, lst);
+					return leftRMI.searchNumID(lookup.get(num, level, Const.LEFT).getNumID(), targetInt, level);
 			} catch (StackOverflowError e) {
 				logger.error("StackOverflow",e);
-				StringBuilder sb = new StringBuilder();
-				for(NodeInfo node : lst)
-					sb.append(node.getNumID() + " " + node.getAddress() + "\n");
-					logger.error(sb.toString());
 				return null;
 			} catch (Exception e) {
-				return lst;
+				return lookup.get(num);
 			}
 		}
 	}

@@ -36,6 +36,10 @@ public class SignedBytes implements Serializable {
 		return array;
 	}
 
+	public long getSize(){
+		if(array == null) return 0;
+		return array.length;
+	}
 	// for testing
 
 	public boolean isAuth() {

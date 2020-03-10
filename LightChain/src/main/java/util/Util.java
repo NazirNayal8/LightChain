@@ -5,11 +5,14 @@ import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.rmi.Naming;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Scanner;
 
 import blockchain.Block;
 import blockchain.Transaction;
+import remoteTest.remoteNodeInitialization.NodeInitializerRMI;
 import skipGraph.NodeInfo;
 
 public class Util {
@@ -21,7 +24,7 @@ public class Util {
 	// Simulate real world latencies on a local network
     public static boolean addArtificialDelay = false;
 
-	
+
 		/*
 		 * This method returns the length of the common prefix between two given strings
 		 */
@@ -34,7 +37,7 @@ public class Util {
 		int i = 0;
 		for(i = 0; i < name1.length() && name1.charAt(i) == name2.charAt(i) ; ++i);
 			return i;
-		}
+	}
 	
 	
 	/*
@@ -101,6 +104,10 @@ public class Util {
 		return result;
 	}
 	
+	public static String bytesToKilobytes(long inp){
+		return String.format("%.2f", inp/1024.0);
+	}
+
 	public static NodeInfo assignNode(NodeInfo node) {
 		if(node == null)
 			return null;
@@ -140,6 +147,17 @@ public class Util {
 	public static String getInput() {
 		String response = in.nextLine();
 		return response;
+	}
+
+	public static String getIntroducerIP(String NodeInitializerAddress, String myPort){
+		try {
+			String IP = grabIP();
+			NodeInitializerRMI rmi = (NodeInitializerRMI) Naming.lookup("//" + NodeInitializerAddress + "/NodeInitializerRMI");
+			return rmi.getIntroducer(IP+":"+myPort);
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 }

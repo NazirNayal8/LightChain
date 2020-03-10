@@ -144,15 +144,17 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 
 			logger.debug("getting transaction batch");
 			// Get all transaction with this nameID
+			long transactionCollectionStart = System.currentTimeMillis();
 			List<Transaction> tList = getTransactionsWithNameID(name);
+			long transactionCollectionEnd = System.currentTimeMillis();
 			// If number of transactions obtained is less than TX_MIN then we terminate the
 			// process
 			if (tList == null || tList.size() < params.getTxMin()) {
 				logger.debug("Mining Failed: not enough transaction found: " + tList.size());
-				simLog.logMineAttemptLog(false, false, System.currentTimeMillis() - startTotal, -1);
+				simLog.logMineAttemptLog(false, false, System.currentTimeMillis() - startTotal, -1, -1);
 				return null;
 			}
-
+			simLog.logTransactionCollectionTime(transactionCollectionEnd-transactionCollectionStart);
 
 			// If there are TX_MIN transaction then add them into a new block
 			Block newBlk = new Block(blk.getHash(), getNumID(), getAddress(), tList, blk.getIndex() + 1,
@@ -166,7 +168,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 			// TODO: find a way to avoid this null return
 			if (!isValidated) {
 				logger.debug("Block validation failed");
-				simLog.logMineAttemptLog(true, false, System.currentTimeMillis() - startTotal, endValid - startValid);
+				simLog.logMineAttemptLog(true, false, System.currentTimeMillis() - startTotal, endValid - startValid, newBlk.getSize());
 				return null;
 			}
 
@@ -176,7 +178,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 			insertBlock(newBlk, blk.getAddress());
 
 			long endTotal = System.currentTimeMillis();
-			simLog.logMineAttemptLog(true, true, endTotal - startTotal, endValid - startValid);
+			simLog.logMineAttemptLog(true, true, endTotal - startTotal, endValid - startValid, newBlk.getSize());
 
 			return newBlk;
 		} catch (Exception e) {
@@ -451,7 +453,10 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 					numValidations++;
 					timePerValidator += signature.getValidationTime();
 				}
-
+				// break if we reach required number of signatures
+				if(numValidations >= params.getSignaturesThreshold()){
+					break;
+				}
 				t.addSignature(signature);
 			}
 
@@ -467,7 +472,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 			if(numValidations != 0)
 				timePerValidator /= numValidations;
 
-			simLog.logTransaction(validated, isAuthenticated, isSound, isCorrect, hasBalance, end - start,timePerValidator);
+			simLog.logTransaction(validated, isAuthenticated, isSound, isCorrect, hasBalance, end - start,timePerValidator, t.getSize());
 
 			return validated;
 		} catch (Exception e) {
@@ -487,6 +492,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 	 */
 	public SignedBytes PoV(Block blk) throws RemoteException {
 		try {
+			long startTime = System.currentTimeMillis();
 			updateView();
 			boolean isAuth = isAuthenticated(blk);
 			boolean isCons = isConsistent(blk);
@@ -501,7 +507,9 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 					return new SignedBytes(null, isAuth, true, true, true);
 				}
 			}
+			long endTime = System.currentTimeMillis();
 			logger.debug("Block Approved");
+			simLog.logBlockValidationAttempt(endTime-startTime);
 			SignedBytes signedHash = new SignedBytes(digitalSignature.signString(blk.getHash()).getBytes(), isAuth,
 					true, true, true);
 			return signedHash;
@@ -644,6 +652,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 			SignedBytes signedHash = new SignedBytes(digitalSignature.signString(t.getHash()).getBytes(), isAuth,
 					isSound, isCorrect, hasBalance);
 			long endTime = System.currentTimeMillis();
+			simLog.logTransactionValidationAttempt(endTime-startTime);
 			signedHash.setValidationTime(endTime - startTime);
 			return signedHash;
 		} catch (Exception e) {
@@ -902,7 +911,6 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 			CountDownLatch cdl = new CountDownLatch(numTransactions);
 			for (int i = 0; i < numTransactions; i++) {
 				int transactionWait = rnd.nextInt(1000 * pace);
-				int miningWait = 1000 * pace - transactionWait;
 				Timer timer = new Timer();
 				timer.schedule(new TimerTask() {
 					@Override

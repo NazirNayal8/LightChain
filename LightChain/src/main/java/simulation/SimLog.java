@@ -11,7 +11,7 @@ public class SimLog implements Serializable {
 	private List<TransactionLog> failedTransactions;
 	private List<MineAttemptLog> validMineLog;
 	private List<MineAttemptLog> failedMineLog;
-	
+	private MiscStatisticsLog miscLog;
 
 	public SimLog(boolean mode) {
 		this.mode = mode;
@@ -19,23 +19,36 @@ public class SimLog implements Serializable {
 		failedTransactions = new ArrayList<>();
 		validMineLog = new ArrayList<>();
 		failedMineLog = new ArrayList<>();
+		miscLog = new MiscStatisticsLog();
 	}
 
 	public void logTransaction(boolean success, int isAuthenticated, int isSound, int isCorrect, int hasBalance,
-			long time,long timePerValidator) {
-		TransactionLog log = new TransactionLog(success, isAuthenticated, isSound, isCorrect, hasBalance, time,timePerValidator);
+			long time,long timePerValidator,long size) {
+		TransactionLog log = new TransactionLog(success, isAuthenticated, isSound, isCorrect, hasBalance, time,timePerValidator,size);
 		if (success)
 			validTransactions.add(log);
 		else
 			failedTransactions.add(log);
 	}
 
-	public void logMineAttemptLog(boolean foundTxMin, boolean success, long totalTime, long validationTime) {
-		MineAttemptLog log = new MineAttemptLog(foundTxMin, success, totalTime, validationTime);
+	public void logMineAttemptLog(boolean foundTxMin, boolean success, long totalTime, long validationTime, long size) {
+		MineAttemptLog log = new MineAttemptLog(foundTxMin, success, totalTime, validationTime,size);
 		if(success)
 			validMineLog.add(log);
 		else
 			failedMineLog.add(log);
+	}
+
+	public void logTransactionCollectionTime(long transactionCollectionTime){
+		miscLog.logTransactionCollectionAttempt(transactionCollectionTime);
+	}
+
+	public void logTransactionValidationAttempt(long transactionValidationTime){
+		miscLog.logTransactionValidationAttempt(transactionValidationTime);
+	}
+
+	public void logBlockValidationAttempt(long blockValidationTime){
+		miscLog.logBlockValidationAttempt(blockValidationTime);
 	}
 
 	public List<TransactionLog> getValidTransactions() {
@@ -53,6 +66,8 @@ public class SimLog implements Serializable {
 	public List<MineAttemptLog> getFailedMineAttemptLog(){
 		return failedMineLog;
 	}
+
+	public MiscStatisticsLog getMiscLog(){return miscLog;}
 	
 	public boolean getMode() {
 		return mode;

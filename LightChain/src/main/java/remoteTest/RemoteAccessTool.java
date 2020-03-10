@@ -6,6 +6,8 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,12 +21,15 @@ import blockchain.Block;
 import blockchain.LightChainNode;
 import blockchain.LightChainRMIInterface;
 import blockchain.Transaction;
+import remoteTest.remoteNodeInitialization.NodeInitializer;
 import simulation.SimLog;
 import skipGraph.LookupTable;
 import skipGraph.NodeInfo;
 import skipGraph.RMIInterface;
+import util.Util;
 
 import static simulation.Simulation.processData;
+import static util.Util.grabIP;
 
 public class RemoteAccessTool {
 	static String ip;
@@ -41,6 +46,17 @@ public class RemoteAccessTool {
 	private static ArrayList<TestingLog> TestLogs;
 
 	public static void main(String[] args) {
+		Util.local = false;
+		String IP = grabIP();
+		System.setProperty("java.rmi.server.hostname",IP);
+		System.setProperty("java.rmi.server.useLocalHostname", "false");
+		try{
+			Registry registry = LocateRegistry.createRegistry(1984);
+			registry.rebind("NodeInitializerRMI", new NodeInitializer());
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
 		while (true) {
 			if (!skipInit) {
 				log("Enter IP address along with port (x to exit)");
@@ -118,18 +134,12 @@ public class RemoteAccessTool {
 							numInput = get();
 						}
 						int num = Integer.parseInt(numInput);
-						List<NodeInfo> lst = new ArrayList<NodeInfo>();
 						NodeInfo result = null;
 						try {
-							lst = node.searchByNumIDHelper(num, lst);
-							result = lst.get(lst.size() - 1);
+							result = node.searchByNumID(num);
 						} catch (RemoteException e) {
 							e.printStackTrace();
 							log("Remote Exception in query.");
-						}
-						log("The search path is: ");
-						for (int i = 0; i < lst.size(); i++) {
-							log(i + ") " + lst.get(i).getNumID());
 						}
 						log("The result of search by numeric ID is: " + result.getAddress());
 						if (promptSwitch(result))

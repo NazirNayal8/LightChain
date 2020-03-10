@@ -2,6 +2,8 @@ package simulation;
 
 import java.io.Serializable;
 
+import static util.Util.bytesToKilobytes;
+
 class TransactionLog implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -12,9 +14,10 @@ class TransactionLog implements Serializable {
 	private int hasBalance;
 	private long timeTaken;
 	private long timePerValidator;
+	private long size;
 
 	public TransactionLog(boolean success, int isAuthenticated, int isSound, int isCorrect, int hasBalance,
-			long timeTaken, long timePerValidator) {
+			long timeTaken, long timePerValidator, long size) {
 		this.success = success;
 		this.isAuthenticated = isAuthenticated;
 		this.isSound = isSound;
@@ -22,6 +25,7 @@ class TransactionLog implements Serializable {
 		this.hasBalance = hasBalance;
 		this.timeTaken = timeTaken;
 		this.timePerValidator = timePerValidator;
+		this.size = size;
 	}
 
 	public boolean isSuccessful() {
@@ -32,9 +36,11 @@ class TransactionLog implements Serializable {
 		return timeTaken;
 	}
 
+	public long getSize(){return size;}
+
 	@Override
 	public String toString() {
 		return timeTaken + "," + isAuthenticated + "," + isSound + "," + isCorrect + "," + hasBalance + "," + success
-				+ "," + timePerValidator + "\n";
+				+ "," + timePerValidator + "," + bytesToKilobytes(size) + "\n";
 	}
 }

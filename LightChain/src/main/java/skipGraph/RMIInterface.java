@@ -51,9 +51,7 @@ public interface RMIInterface extends Remote {
 
 	public NodeInfo searchByNumID(int targetNum) throws RemoteException;
 
-	public List<NodeInfo> searchByNumIDHelper(int targetNum, List<NodeInfo> lst) throws RemoteException;
-
-	public List<NodeInfo> searchNumID(int numID, int searchTarget, int level, List<NodeInfo> lst)
+	public NodeInfo searchNumID(int numID, int searchTarget, int level)
 			throws RemoteException;
 
 	/*

@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import static util.Util.getIntroducerIP;
+
 public class RemoteDeploymentDriver {
     private static String IP;
     public static void main(String []args){
@@ -47,27 +49,32 @@ public class RemoteDeploymentDriver {
         params.setLevels(Integer.parseInt(propMng.getProperty("levels", "30")));
         params.setValidationFees(Integer.parseInt(propMng.getProperty("validationFees", "1")));
         params.setMode(Boolean.parseBoolean(propMng.getProperty("Mode", "True")));
+        String adrs = getIntroducerIP(propMng.getProperty("NodeInitializerAddress",null),"1099");
 
-
-        if(master){
+        if((adrs!=null && adrs.equalsIgnoreCase("First")) || master){
             runMaster(params);
         }else {
-            runSlave(params);
+            runSlave(params, adrs);
         }
     }
 
-    public static void runSlave(Parameters params){
+    public static void runSlave(Parameters params, String adrs){
         Configuration conf = new Configuration();
-        conf.parseIntroducer();
+        if(adrs==null){
+            conf.parseIntroducer();
+        }else{
+            conf.setIntroducer(adrs);
+        }
         LightChainNode slave;
+        int port = 1099;
         for(int i=0;i<10;i++){
-            int port = (new Random()).nextInt(65000);
             try{
             slave = new LightChainNode(params, port, conf.getIntroducer(), false);
             break;
             } catch (RemoteException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
+            port = (new Random()).nextInt(65000);
         }
         Scanner in = new Scanner(System.in);
         while(true){

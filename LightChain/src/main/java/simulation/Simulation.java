@@ -2,6 +2,7 @@ package simulation;
 
 import blockchain.LightChainNode;
 import blockchain.Parameters;
+import blockchain.Transaction;
 import skipGraph.NodeInfo;
 import util.Const;
 import util.Util;
@@ -15,6 +16,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+
+import static util.Util.bytesToKilobytes;
 
 public class Simulation {
 
@@ -71,6 +74,7 @@ public class Simulation {
 	public static void processData(ConcurrentHashMap<NodeInfo, SimLog> map,int iterations) {
 		processTransactions(map, iterations);
 		processMineAttempts(map, iterations);
+		processMiscStats(map);
 	}
 
 	private static void processMineAttempts(ConcurrentHashMap<NodeInfo, SimLog> map,int iterations) {
@@ -87,7 +91,7 @@ public class Simulation {
 
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("NumID," + "Honest," + "total time," + "foundTxMin," + "Validation time," + "successful\n");
+			sb.append("NumID," + "Honest," + "total time," + "foundTxMin," + "Validation time," + "successful, block size (KB)\n");
 
 			int successSum = 0;
 
@@ -104,7 +108,7 @@ public class Simulation {
 				}
 				successSum += validMine.size();
 				for (int i = 0; i < failedMine.size(); i++) {
-					sb.append(",,");
+					if (i != 0 && validMine.size()>0)sb.append(",,");
 					sb.append(failedMine.get(i));
 				}
 				sb.append('\n');
@@ -136,7 +140,7 @@ public class Simulation {
 
 			sb.append("NumID," + "Honest," + "Transaction Trials," + "Transaction Success,"
 					+ "Transaction time(per)," + "Authenticated count," + "Sound count," + "Correct count,"
-					+ "Has Balance count," + "Successful\n");
+					+ "Has Balance count," + "Successful, Avg Time per validator, Transaction size (KB)\n");
 
 			int successSum = 0;
 
@@ -167,5 +171,58 @@ public class Simulation {
 			e.printStackTrace();
 		}
 
+	}
+
+	private static void processMiscStats(ConcurrentHashMap<NodeInfo, SimLog> map){
+		try{
+			String logPath = System.getProperty("user.dir") + File.separator + "Logs" + File.separator
+					+ "MiscStatistics.csv";
+			File logFile = new File(logPath);
+
+			logFile.getParentFile().mkdirs();
+			PrintWriter writer;
+
+			writer = new PrintWriter(logFile);
+
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("NumID, Average Transaction validation time (ms), Average Transaction creation time (ms),"
+					+"Average Block validation time (ms), Average Transaction collection time (ms), Average Transaction Size (KB), "
+					+ "Average Block Size (KB)\n");
+
+			for(NodeInfo nd : map.keySet()){
+				SimLog log = map.get(nd);
+				List<TransactionLog> validTransactions = log.getValidTransactions();
+				List<MineAttemptLog> validBlocks = log.getValidMineAttemptLog();
+				MiscStatisticsLog miscLog = log.getMiscLog();
+
+				long avgTrxValidationTime = miscLog.getTransactionValidationTime()==0?0:(miscLog.getTransactionValidationTime() / miscLog.getTransactionValidationAttempts());
+				long avgBlkValidationTime = miscLog.getBlockValidationTime()==0?0:(miscLog.getBlockValidationTime() / miscLog.getBlockValidationAttempts());
+				long avgCollectionTime = miscLog.getTransactionCollectionTime()==0?0:(miscLog.getTransactionCollectionTime() / miscLog.getNumTransactionCollection());
+
+				long totalTrxValidationTime = 0;
+				long totalTrxSize = 0;
+				for(TransactionLog trxLog : validTransactions){
+					totalTrxValidationTime += trxLog.timeTaken();
+					totalTrxSize += trxLog.getSize();
+				}
+				long avgTrxCreationTime = totalTrxValidationTime/validTransactions.size();
+				long avgTrxCreationSize = totalTrxSize/validTransactions.size();
+
+				long totalBlkSize = 0;
+				for(MineAttemptLog blkLog : validBlocks){
+					totalBlkSize += blkLog.getSize();
+				}
+				long avgBlkSize = totalBlkSize/validBlocks.size();
+
+				sb.append(nd.getNumID() + "," + avgTrxValidationTime + "," + avgTrxCreationTime + "," + avgBlkValidationTime + "," + avgCollectionTime
+				+ "," + bytesToKilobytes(avgTrxCreationSize) + "," + bytesToKilobytes(avgBlkSize));
+
+			}
+			writer.write(sb.toString());
+			writer.close();
+		}catch (FileNotFoundException e){
+			e.printStackTrace();
+		}
 	}
 }

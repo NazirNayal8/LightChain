@@ -19,16 +19,12 @@ public class SimulationDriver {
         params.setValidationFees(getIntProperty("validationFees", "1"));
         params.setMode(getBoolProperty("Mode", "True"));
         int nodeCount = getIntProperty("nodeCount", "10");
-        nodeCount = 5;
         Util.addArtificialDelay=true;
         Util.local = true;
         int iterations = getIntProperty("iterations", "100");
-        iterations = 10;
         int pace = getIntProperty("pace","1");
-        pace = 60;
         Logger lg = Logger.getLogger(SimulationDriver.class);
         lg.info("Starting simulation with parameters: "+ params+" Number of nodes: "+ nodeCount+ "\n Number of iterations: "+ iterations+ "\n Pace: "+ pace);
-
         Simulation.startSimulation(params, nodeCount, iterations, pace);
         System.exit(0);
     }
