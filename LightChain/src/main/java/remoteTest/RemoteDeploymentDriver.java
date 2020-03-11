@@ -16,7 +16,7 @@ import static util.Util.getIntroducerIP;
 public class RemoteDeploymentDriver {
     private static String IP;
     public static void main(String []args){
-        Util.local = false;
+        Util.local = true;
         IP = Util.grabIP();
         try {
 			System.setProperty("java.rmi.server.hostname",IP);
