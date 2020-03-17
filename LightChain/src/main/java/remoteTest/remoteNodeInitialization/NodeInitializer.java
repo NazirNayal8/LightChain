@@ -18,7 +18,7 @@ public class NodeInitializer extends UnicastRemoteObject implements NodeInitiali
     @Override
     public synchronized String getIntroducer(String myIp) throws RemoteException {
         try{
-            Thread.sleep(6000);
+            Thread.sleep(30000);
             System.out.println("Received get request");
         }catch (Exception e){}
         if(ip==null){

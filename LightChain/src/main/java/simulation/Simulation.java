@@ -206,17 +206,16 @@ public class Simulation {
 					totalTrxValidationTime += trxLog.timeTaken();
 					totalTrxSize += trxLog.getSize();
 				}
-				long avgTrxCreationTime = totalTrxValidationTime/validTransactions.size();
-				long avgTrxCreationSize = totalTrxSize/validTransactions.size();
+				long avgTrxCreationTime = totalTrxValidationTime/(validTransactions.size()==0?1:validTransactions.size());
+				long avgTrxCreationSize = totalTrxSize/(validTransactions.size()==0?1:validTransactions.size());
 
 				long totalBlkSize = 0;
 				for(MineAttemptLog blkLog : validBlocks){
 					totalBlkSize += blkLog.getSize();
 				}
-				long avgBlkSize = totalBlkSize/validBlocks.size();
+				long avgBlkSize = totalBlkSize/(validBlocks.size()==0?1:validBlocks.size());
 
-				sb.append(nd.getNumID() + "," + avgTrxValidationTime + "," + avgTrxCreationTime + "," + avgBlkValidationTime + "," + avgCollectionTime
-				+ "," + bytesToKilobytes(avgTrxCreationSize) + "," + bytesToKilobytes(avgBlkSize));
+				sb.append(nd.getNumID()).append(",").append(avgTrxValidationTime).append(",").append(avgTrxCreationTime).append(",").append(avgBlkValidationTime).append(",").append(avgCollectionTime).append(",").append(bytesToKilobytes(avgTrxCreationSize)).append(",").append(bytesToKilobytes(avgBlkSize)).append("\n");
 
 			}
 			writer.write(sb.toString());

@@ -46,8 +46,10 @@ public class RemoteAccessTool {
 	private static ArrayList<TestingLog> TestLogs;
 
 	public static void main(String[] args) {
-		Util.local = false;
+		getAndPrintSimLogs();
+		Util.local = true;
 		String IP = grabIP();
+		System.out.println("My IP: "+IP);
 		System.setProperty("java.rmi.server.hostname",IP);
 		System.setProperty("java.rmi.server.useLocalHostname", "false");
 		try{
@@ -251,16 +253,59 @@ public class RemoteAccessTool {
 
 	public static void getAndPrintSimLogs(){
 		transactionCount=50;
-		grabUniqueNodes();
+		//grabUniqueNodes();
+		String addresses[] = new String[]{
+			"35.247.110.246:1099",
+			"34.106.82.240:1099",
+			"34.94.246.102:1099",
+			"35.199.102.35:1099",
+			"35.203.3.135:1099",
+			"35.236.214.97:1099",
+			"35.224.98.250:1099",
+			"35.196.134.64:1099",
+			"35.222.81.16:1099",
+			"35.230.171.33:1099",
+			"34.94.16.107:1099",
+			"35.231.187.179:1099",
+			"34.106.85.43:1099",
+			"34.95.60.179:1099",
+			"35.247.216.225:1099",
+			"35.247.91.182:1099",
+			"34.95.139.154:1099",
+			"34.95.28.126:1099",
+			"35.221.18.210:1099",
+			"104.196.40.56:1099",
+			"34.69.136.74:1099",
+			"34.94.132.162:1099",
+			"34.83.152.241:1099",
+			"34.106.61.143:1099",
+			"34.106.81.186:1099",
+			"35.238.178.125:1099",
+			"34.74.11.210:1099",
+			"34.82.40.35:1099",
+			"35.236.12.28:1099",
+			"34.95.230.124:1099",
+			"35.203.108.27:1099",
+			"35.221.21.196:1099"
+		};
 		ConcurrentHashMap<NodeInfo, SimLog> map = new ConcurrentHashMap<>();
-		for(NodeInfo tmp : nodeList){
+		for(String adrs : addresses){
 			try{
-				LightChainRMIInterface cur = getRMI(tmp.getAddress());
-				map.put(tmp, cur.getSimLog());
+				LightChainRMIInterface cur = getRMI(adrs);
+				map.put(cur.getNode(cur.getNumID()), cur.getSimLog());
 			}catch (Exception e){
 				e.printStackTrace();
+				System.out.println(adrs);
 			}
 		}
+		//		for(NodeInfo tmp : nodeList){
+//			try{
+//				LightChainRMIInterface cur = getRMI(tmp.getAddress());
+//				map.put(tmp, cur.getSimLog());
+//			}catch (Exception e){
+//				e.printStackTrace();
+//			}
+//		}
 		processData(map, transactionCount);
 	}
 
