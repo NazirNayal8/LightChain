@@ -4,6 +4,7 @@ import remoteTest.PingLog;
 import skipGraph.NodeInfo;
 import skipGraph.RMIInterface;
 
+import java.io.FileNotFoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 
@@ -131,7 +132,7 @@ public class SkipNodeDelayWrapper implements RMIInterface {
     }
 
     @Override
-    public NodeInfo insertSearch(int level, int direction, int num, String target) throws RemoteException {
+    public NodeInfo insertSearch(int level, int direction, int num, String target) throws RemoteException, FileNotFoundException {
         before();
         return innerNode.insertSearch(level, direction, num, target);
     }

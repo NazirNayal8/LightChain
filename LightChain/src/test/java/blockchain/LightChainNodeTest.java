@@ -110,8 +110,8 @@ class LightChainNodeTest {
 			node3.insertTransaction(t3);
 			node4.insertTransaction(t4);
 
-			Block newBlk = node1.mineAttempt();
-			Block lstBlk = node2.getLatestBlock();
+			Block newBlk = node2.mineAttempt();
+			Block lstBlk = node3.getLatestBlock();
 
 			assertNotNull(newBlk, "block was not mining failed");
 			assertEquals(newBlk, lstBlk, "new block was not properly added");
@@ -136,9 +136,9 @@ class LightChainNodeTest {
 			nodeList.add(node3);
 			nodeList.add(node4);
 
-			int iterations = 100;
+			int iterations = 10;
 
-			Block latestBlock = node1.insertGenesis();
+			Block latestBlock = node2.insertGenesis();
 
 			for (int i = 0; i < iterations; ++i) {
 				for (int j = 0; j < nodeList.size(); ++j) {
@@ -151,10 +151,9 @@ class LightChainNodeTest {
 				for(int j = 0 ; j < nodeList.size(); ++j) {
 					Block testBlock = nodeList.get(j).getLatestBlock();
 					assertEquals(latestBlock,testBlock,"latest block wrong");
-					Util.log("Comparing " + latestBlock.getNumID() + " and " + testBlock.getNumID());
 				}
 				
-				if (i % 2 == 0) {
+				if (i % 1 == 0) {
 					int index = i % nodeList.size();
 					Block blk = new Block(latestBlock.getHash(), nodeList.get(index).getNumID(),
 							nodeList.get(index).getAddress(), latestBlock.getIndex(), params.getLevels());

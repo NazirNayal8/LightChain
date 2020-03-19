@@ -132,6 +132,12 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 			logger.debug("Attempting to mine");
 
 			Block blk = getLatestBlock();
+
+			if(blk.getAddress().equals(getAddress())){
+			  logger.debug("Mine aborted because last block has same address");
+			  return null;
+      }
+
 			// Change numID to a nameID string
 			if (blk == null) {
 				logger.error("Mining Failed: Failed to get latest block");
@@ -218,7 +224,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 		try {
 
 			boolean success = false;
-			int waitCount = 5;
+			int waitCount = 3;
 			while(!success && waitCount > 0) {
 				Block lstBlk = getLatestBlock();
 				logger.debug("Prev found: " + lstBlk.getNumID());
@@ -277,7 +283,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 	public Block insertGenesis() throws RemoteException {
 		StringBuilder st = new StringBuilder();
 		for (int i = 0; i < params.getLevels(); i++) {
-			st.append("0");
+			st.append("1");
 		}
 		String prev = st.toString();
 		int index = 0;
@@ -310,7 +316,6 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 			else {
 				logger.error(
 						blk.getNumID() + " was returned when " + num + " was expected, its type is " + blk.getClass());
-				logLevel(Const.ZERO_LEVEL);
 				Thread.sleep(100);
 				return getLatestBlock();
 			}
@@ -356,6 +361,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 		for (NodeInfo t : list) {
 			if (t instanceof Transaction)
 				tList.add((Transaction) t);
+			if(tList.size() == params.getTxMin()) break;
 		}
 		return tList;
 	}
@@ -605,7 +611,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 			Map<String, Integer> taken = new HashMap<>();
 			int validFound = 0;
 			taken.put(address, 1);// To not take the node itself or any data node belonging to it.
-			for (int i = 0; validFound < params.getAlpha() && i < 60; ++i) {
+			for (int i = 0; validFound < params.getAlpha() && i < 200; ++i) {
 				String hash = hasher.getHash(str + i, params.getLevels());
 				int num = Integer.parseInt(hash, 2);
 				NodeInfo node = searchByNumID(num);
@@ -615,6 +621,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 				validators.add(node);
 				validFound++;
 			}
+			logger.debug("Found " + validators.size() + " Unique Validators");
 			return validators;
 		} catch (NumberFormatException e) {
 			e.printStackTrace();

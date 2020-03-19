@@ -27,14 +27,14 @@ public class Simulation {
 			ArrayList<LightChainNode> nodes = new ArrayList<>();
 			LightChainNode initialNode = null;
 			int numFailures;
-			for(int i=0;i<nodeCount;i++){
+			for(int i = 0 ; i < nodeCount ; i++){
 				try{
 					int port = rnd.nextInt(65535);
 					LightChainNode node;
-					if(i==0){
+					if(i == 0){
 						node = new LightChainNode(params, port, Const.DUMMY_INTRODUCER, true);
 						initialNode = node;
-					}else{
+					} else {
 						node = new LightChainNode(params, port, initialNode.getAddress(), false);
 					}
 					nodes.add(node);
@@ -46,6 +46,8 @@ public class Simulation {
 
 			initialNode.insertGenesis();
 
+			initialNode.logLevel(0);
+
 			ConcurrentHashMap<NodeInfo, SimLog> map = new ConcurrentHashMap<>();
 			CountDownLatch latch = new CountDownLatch(nodes.size());
 			long startTime = System.currentTimeMillis();
@@ -55,8 +57,7 @@ public class Simulation {
 			}
 			latch.await();
 			
-			initialNode.printLevel(0);
-			
+
 			long endTime = System.currentTimeMillis();
 
 			Util.log("Simulation Done. Time Taken " +(endTime - startTime)+ " ms");
@@ -67,8 +68,7 @@ public class Simulation {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}
-	}
+		}   }
 
 
 	public static void processData(ConcurrentHashMap<NodeInfo, SimLog> map,int iterations) {

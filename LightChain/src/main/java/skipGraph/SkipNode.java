@@ -38,7 +38,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	private Registry registry;
 	private LookupTable lookup;
 	private Logger logger;
-	
+
 	// TODO: fork-resolving mechanism unimplemented
 	// TODO: bootstrapping unimplemented
 
@@ -85,7 +85,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 			insertNode(peerNode);
 		}
 	}
-	
+
 	/**
 	 * This version of the constructor is used as long as LightChainNode extends SkipNode
 	 * Because it defers RMI binding and insertion task to LightChainNode after setting
@@ -377,10 +377,34 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * @param searchTarget numerical ID of target of search
 	 * @return NodeInfo of the target node if found, or closest node in case it was
 	 *         not found
+	 * @see RMIInterface#searchByNumID(java.lang.String)
 	 */
 	public NodeInfo searchByNumID(int searchTarget) {
 		logger.debug("Searching for " + searchTarget);
+		try { 
+			List<NodeInfo> lst = new ArrayList<NodeInfo>();
+			lst = searchByNumIDHelper(searchTarget, lst);
+			return lst == null ? null : lst.get(lst.size() - 1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * A helper method for searchByNumID, it essentially starts the search operation
+	 * but it supplies the search with an empty list to collect the nodes on the
+	 * path of the search
+	 * 
+	 * @param searchTarget numerical ID to be searched
+	 * @param lst          the list which will collect the nodes on the search path
+	 * @return a list containing all nodes that have been encountered on the search
+	 *         path
+	 */
+	public List<NodeInfo> searchByNumIDHelper(int searchTarget, List<NodeInfo> lst) {
 		try {
+			
 			int level = lookup.getMaxLevels();
 			// route search to closest data node
 			int num = getBestNum(searchTarget);
@@ -396,7 +420,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * This method is a hepler method for searchByNumID() It recieves the target
 	 * numID and the level it is searching in, and it routes the search through the
 	 * skip graph recursively using RMI
-	 * 
+	 *
 	 * @param numID     numerical ID of current node at which the search has arrived
 	 * @param targetInt the target of search
 	 * @param level     the level of skip graph at which we are searching
@@ -465,7 +489,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	/**
 	 * This method receives a nameID and returns the index of the data node which
 	 * has the most common prefix with the given nameID
-	 * 
+	 *
 	 * @param name      name ID of node for which we want to find node in this
 	 *                  address with closest name ID
 	 * @param direction direction of search
@@ -481,11 +505,11 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * that the nameID of the returned node is the most similar with the
 	 * searchTarget. Similarity is defined to be the maximum number of common bits
 	 * between the two strings
-	 * 
+	 *
 	 * @param searchTarget name ID which we are searching for
 	 * @return NodeInfo of target if found, or its closest node found
 	 * @see RMIInterface#searchByNameID(java.lang.String)
-	 * 
+	 *
 	 *      TODO: currently, when a numID search for a value that does not exist in
 	 *      the skip graph occurs, the returned result depends on the side from
 	 *      which the search had started, if search started from the right of the
