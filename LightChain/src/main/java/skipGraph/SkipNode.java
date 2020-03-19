@@ -44,11 +44,7 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * Constructor for SkipNode class The node requires the following info to be
 	 * able to function:
 	 *
-	 * @param maxLevels  number of levels of the skip graph
-	 * @param RMIPort    Port on which Skip Node is operating
-	 * @param IP         IP of Skip Node
-	 * @param numID      numerical ID of Skip Node
-	 * @param nameID     name ID of Skip Node
+	 * @param config     skip node configuration
 	 * @param introducer the node that helps in inserting the current node
 	 * @param isInitial  Indicator that this node is an initial node in the
 	 *                   skipGraph
@@ -92,9 +88,9 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * This version of the constructor is used as long as LightChainNode extends SkipNode
 	 * Because it defers RMI binding and insertion task to LightChainNode after setting
 	 * the correct information (numID and nameID
-	 * @param config
+	 * @param RMIPort
+	 * @param maxLevels
 	 * @param introducer
-	 * @param isInitial
 	 * @throws RemoteException
 	 */
 	public SkipNode(int RMIPort, int maxLevels, String introducer) throws RemoteException{

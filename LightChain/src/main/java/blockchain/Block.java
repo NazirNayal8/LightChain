@@ -101,7 +101,7 @@ public class Block extends NodeInfo {
 	
 	public String toString() {
 		
-		return prev + owner + getTransactionSetString();
+		return prev + " " + owner + " "+ getTransactionSetString();
 	}
 
 	private String getTransactionSetString() {

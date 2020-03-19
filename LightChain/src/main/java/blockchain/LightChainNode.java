@@ -127,6 +127,12 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 			logger.debug("Attempting to mine");
 
 			Block blk = getLatestBlock();
+
+			if(blk.getAddress().equals(getAddress())){
+			  logger.debug("Mine aborted because last block has same address");
+			  return null;
+      }
+
 			// Change numID to a nameID string
 			if (blk == null) {
 				logger.error("Mining Failed: Failed to get latest block");
@@ -254,6 +260,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 //			removeFlagNode();
 //			insertNode(blk);
 //			insertFlagNode(blk);
+
 		} else {
 			insertNode(blk);
 
@@ -270,7 +277,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 	public Block insertGenesis() throws RemoteException {
 		StringBuilder st = new StringBuilder();
 		for (int i = 0; i < params.getLevels(); i++) {
-			st.append("0");
+			st.append("1");
 		}
 		String prev = st.toString();
 		int index = 0;
@@ -303,7 +310,6 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 			else {
 				logger.error(
 						blk.getNumID() + " was returned when " + num + " was expected, its type is " + blk.getClass());
-				logLevel(Const.ZERO_LEVEL);
 				Thread.sleep(100);
 				return getLatestBlock();
 			}
@@ -603,6 +609,7 @@ public class LightChainNode extends SkipNode implements LightChainRMIInterface {
 				validators.add(node);
 				validFound++;
 			}
+			logger.debug("Found " + validators.size() + " Unique Validators");
 			return validators;
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
