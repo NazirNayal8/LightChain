@@ -13,6 +13,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import delay.SkipNodeDelayWrapper;
 import org.apache.log4j.Logger;
@@ -377,34 +378,10 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 	 * @param searchTarget numerical ID of target of search
 	 * @return NodeInfo of the target node if found, or closest node in case it was
 	 *         not found
-	 * @see RMIInterface#searchByNumID(java.lang.String)
 	 */
 	public NodeInfo searchByNumID(int searchTarget) {
 		logger.debug("Searching for " + searchTarget);
-		try { 
-			List<NodeInfo> lst = new ArrayList<NodeInfo>();
-			lst = searchByNumIDHelper(searchTarget, lst);
-			return lst == null ? null : lst.get(lst.size() - 1);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	/**
-	 * A helper method for searchByNumID, it essentially starts the search operation
-	 * but it supplies the search with an empty list to collect the nodes on the
-	 * path of the search
-	 * 
-	 * @param searchTarget numerical ID to be searched
-	 * @param lst          the list which will collect the nodes on the search path
-	 * @return a list containing all nodes that have been encountered on the search
-	 *         path
-	 */
-	public List<NodeInfo> searchByNumIDHelper(int searchTarget, List<NodeInfo> lst) {
 		try {
-			
 			int level = lookup.getMaxLevels();
 			// route search to closest data node
 			int num = getBestNum(searchTarget);
@@ -851,6 +828,41 @@ public class SkipNode extends UnicastRemoteObject implements RMIInterface {
 
 	public NodeInfo getNode(int num) {
 		return lookup.get(num);
+	}
+
+	public void doubleCheckNeighbors(){
+		for(int numID : lookup.keySet()){
+			for(int i=0;i<maxLevels;i++){
+				try{
+					NodeInfo inf = lookup.get(numID, i, Const.LEFT);
+					if(inf!=null){
+						RMIInterface nd = getRMI(inf.getAddress());
+						NodeInfo hm = nd.getRightNode(i, nd.getNumID());
+ 						if(hm==null){
+ 							logger.error("Level "+i+" of node with numID " + numID + " appears as null to the left neighbor. Left neighbor numID: "+inf.getNumID());
+						}else{
+ 							if(hm.getNumID()!=numID){
+								logger.error("Level "+i+" of node with numID " + numID + " is inconsistent on the left. Left neighbor: "+inf.getNumID());
+							}
+						}
+					}
+					inf = lookup.get(numID, i, Const.RIGHT);
+					if(inf!=null){
+						RMIInterface nd = getRMI(inf.getAddress());
+						NodeInfo hm = nd.getLeftNode(i, nd.getNumID());
+ 						if(hm==null){
+ 							logger.error("Level "+i+" of node with numID " + numID + " appears as null to the right neighbor. Right neighbor: "+inf.getNumID());
+						}else {
+							if (hm.getNumID() != numID) {
+								logger.error("Level " + i + " of node with numID " + numID + " is inconsistent on the right. Right neighbor: "+inf.getNumID());
+							}
+						}
+					}
+				}catch (Exception e){
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////

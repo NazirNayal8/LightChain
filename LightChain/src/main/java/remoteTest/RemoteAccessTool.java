@@ -17,8 +17,6 @@ import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
-import blockchain.Block;
-import blockchain.LightChainNode;
 import blockchain.LightChainRMIInterface;
 import blockchain.Transaction;
 import remoteTest.remoteNodeInitialization.NodeInitializer;

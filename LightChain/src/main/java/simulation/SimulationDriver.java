@@ -19,7 +19,7 @@ public class SimulationDriver {
         params.setValidationFees(getIntProperty("validationFees", "1"));
         params.setMode(getBoolProperty("Mode", "True"));
         int nodeCount = getIntProperty("nodeCount", "10");
-        Util.addArtificialDelay=true;
+        Util.addArtificialDelay=false;
         Util.local = true;
         int iterations = getIntProperty("iterations", "100");
         int pace = getIntProperty("pace","1");

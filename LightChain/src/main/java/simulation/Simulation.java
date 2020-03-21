@@ -2,7 +2,6 @@ package simulation;
 
 import blockchain.LightChainNode;
 import blockchain.Parameters;
-import blockchain.Transaction;
 import skipGraph.NodeInfo;
 import util.Const;
 import util.Util;
@@ -44,31 +43,45 @@ public class Simulation {
 				}
 			}
 
+			for(int i=0;i<nodes.size();i++){
+				nodes.get(i).doubleCheckNeighbors();
+			}
+			System.out.println("doubleCheckedNeighbors done");
+
 			initialNode.insertGenesis();
 
-			initialNode.logLevel(0);
-
-			ConcurrentHashMap<NodeInfo, SimLog> map = new ConcurrentHashMap<>();
-			CountDownLatch latch = new CountDownLatch(nodes.size());
-			long startTime = System.currentTimeMillis();
-			for (int i = 0; i < nodes.size(); ++i) {
-				SimThread sim = new SimThread(nodes.get(i), latch, map, iterations, pace);
-				sim.start();
+			for(int i=0;i<nodes.size();i++){
+				nodes.get(i).doubleCheckNeighbors();
 			}
-			latch.await();
-			
+			System.out.println("doubleCheckedNeighbors done");
 
-			long endTime = System.currentTimeMillis();
+//			initialNode.logLevel(0);
+//
+//			ConcurrentHashMap<NodeInfo, SimLog> map = new ConcurrentHashMap<>();
+//			CountDownLatch latch = new CountDownLatch(nodes.size());
+//			long startTime = System.currentTimeMillis();
+//			for (int i = 0; i < nodes.size(); ++i) {
+//				SimThread sim = new SimThread(nodes.get(i), latch, map, iterations, pace);
+//				sim.start();
+//			}
+//			latch.await();
+//
+//			for(int i=0;i<nodes.size();i++){
+//				nodes.get(i).doubleCheckNeighbors();
+//			}
 
-			Util.log("Simulation Done. Time Taken " +(endTime - startTime)+ " ms");
+//			long endTime = System.currentTimeMillis();
+
+//			Util.log("Simulation Done. Time Taken " +(endTime - startTime)+ " ms");
 			
-			processData(map, iterations);
+//			processData(map, iterations);
 
 		} catch (RemoteException e) {
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}   }
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+		}
+	}
 
 
 	public static void processData(ConcurrentHashMap<NodeInfo, SimLog> map,int iterations) {
